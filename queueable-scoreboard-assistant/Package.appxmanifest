@@ -7,14 +7,14 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="2ee6f24f-a926-4535-9a09-e7c3e70a3f51"
+    Name="5fe6e1fa-241f-4106-a529-a4233c27a864"
     Publisher="CN=Patrick"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="2ee6f24f-a926-4535-9a09-e7c3e70a3f51" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="5fe6e1fa-241f-4106-a529-a4233c27a864" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Queable Scoreboard Assistant</DisplayName>
+    <DisplayName>queueable-scoreboard-assistant</DisplayName>
     <PublisherDisplayName>Patrick</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -30,12 +30,12 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="Queable_Scoreboard_Assistant.App">
+      EntryPoint="queueable_scoreboard_assistant.App">
       <uap:VisualElements
-        DisplayName="Queable Scoreboard Assistant"
+        DisplayName="queueable-scoreboard-assistant"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="Queable Scoreboard Assistant"
+        Description="queueable-scoreboard-assistant"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
