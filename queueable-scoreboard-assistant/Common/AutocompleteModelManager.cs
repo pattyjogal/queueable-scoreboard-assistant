@@ -9,6 +9,7 @@ namespace queueable_scoreboard_assistant.Common
     class AutocompleteModelManager
     {
         private string _prefix;
+        private PrefixState[] prefixStates;
 
         /// <summary>
         /// Adds a name not currently handled by the DFA to it.
