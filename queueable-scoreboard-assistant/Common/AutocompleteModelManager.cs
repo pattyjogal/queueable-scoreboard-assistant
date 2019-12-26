@@ -9,7 +9,16 @@ namespace queueable_scoreboard_assistant.Common
     class AutocompleteModelManager
     {
         private string _prefix;
-        private PrefixState[] prefixStates;
+        private List<PrefixState> _prefixStates;
+
+        /// <summary>
+        /// Writes all of the prefix states into a file.
+        /// </summary>
+        /// <param name="path">the path where the states file will be written</param>
+        private void DumpPrefixStatesToFile(string path)
+        {
+
+        }
 
         /// <summary>
         /// Adds a name not currently handled by the DFA to it.
