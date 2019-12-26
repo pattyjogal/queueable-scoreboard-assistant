@@ -13,9 +13,20 @@ namespace queueable_scoreboard_assistant.Common
 
         /// <summary>
         /// Writes all of the prefix states into a file.
+        /// 
+        /// Overwrites the file at the given path.
         /// </summary>
         /// <param name="path">the path where the states file will be written</param>
         private void DumpPrefixStatesToFile(string path)
+        {
+
+        }
+
+        /// <summary>
+        /// Reads all of the prefix states from a file.
+        /// </summary>
+        /// <param name="path">the path where the states file exists</param>
+        private void ReadPrefixStatesFromFile(string path)
         {
 
         }
