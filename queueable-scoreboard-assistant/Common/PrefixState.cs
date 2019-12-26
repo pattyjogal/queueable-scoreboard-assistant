@@ -13,5 +13,14 @@ namespace queueable_scoreboard_assistant.Common
 
         // The list of state-indices that this state can transition to
         public int[] transitions;
+
+        public override string ToString()
+        {
+            string output = isAccepting ? "0" : "1";
+            output += ";";
+            output += string.Join(",", transitions);
+
+            return output;
+        }
     }
 }

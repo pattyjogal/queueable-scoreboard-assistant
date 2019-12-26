@@ -19,7 +19,13 @@ namespace queueable_scoreboard_assistant.Common
         /// <param name="path">the path where the states file will be written</param>
         private void DumpPrefixStatesToFile(string path)
         {
-
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(path, false))
+            {
+                foreach (PrefixState state in _prefixStates)
+                {
+                    file.WriteLine(state.ToString());
+                }
+            }
         }
 
         /// <summary>
