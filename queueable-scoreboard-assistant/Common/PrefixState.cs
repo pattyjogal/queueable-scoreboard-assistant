@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace queueable_scoreboard_assistant.Common
 {
-    class PrefixState
+    public class PrefixState
     {
         /// <summary>
         /// Creates a prefix state from a string that ToString() creates.
@@ -21,10 +21,13 @@ namespace queueable_scoreboard_assistant.Common
             }
 
             isAccepting = parts[0].Equals("1");
-            foreach (string pair in parts[1].Split(','))
+            if (parts[1].Length > 0)
             {
-                string[] separatedPair = pair.Split(':');
-                transitions.Add(char.Parse(separatedPair[0]), int.Parse(separatedPair[1]));
+                foreach (string pair in parts[1].Split(','))
+                {
+                    string[] separatedPair = pair.Split(':');
+                    transitions.Add(char.Parse(separatedPair[0]), int.Parse(separatedPair[1]));
+                }
             }
         }
 
@@ -32,16 +35,22 @@ namespace queueable_scoreboard_assistant.Common
         public bool isAccepting;
 
         // The dict of char transitions to state-indices on this state
-        public Dictionary<char, int> transitions;
+        public Dictionary<char, int> transitions = new Dictionary<char, int>();
 
         public override string ToString()
         {
             StringBuilder outputBuilder = new StringBuilder();
-            outputBuilder.Append(isAccepting ? "0" : "1");
+            outputBuilder.Append(isAccepting ? "1" : "0");
             outputBuilder.Append(";");
             foreach (var item in transitions)
             {
-                outputBuilder.Append($"{item.Key}:{item.Value}");
+                outputBuilder.Append($"{item.Key}:{item.Value},");
+            }
+            
+            // Remove the trailing comma
+            if (transitions.Count > 0)
+            {
+                outputBuilder.Remove(outputBuilder.Length - 1, 1);
             }
 
             return outputBuilder.ToString();

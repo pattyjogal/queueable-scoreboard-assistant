@@ -15,7 +15,9 @@ namespace queueable_scoreboard_assistant.Common
     public class AutocompleteModelManager
     {
         private const string FileHeader = "#dfa 1.0";
-        
+        private Windows.Storage.StorageFolder storageFolder =
+            Windows.Storage.ApplicationData.Current.LocalFolder;
+
         private string _prefix;
         private int _currentNode = 0;
         private List<PrefixState> _prefixStates;
@@ -35,17 +37,15 @@ namespace queueable_scoreboard_assistant.Common
         /// 
         /// Overwrites the file at the given path.
         /// </summary>
-        /// <param name="path">the path where the states file will be written</param>
-        public void DumpPrefixStatesToFile(string path)
+        /// <param name="fileName">the file name to write to in the app's local dir</param>
+        public async void DumpPrefixStatesAsync(string fileName)
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(path, false))
-            {
-                file.WriteLine(FileHeader);
-                foreach (PrefixState state in _prefixStates)
-                {
-                    file.WriteLine(state.ToString());
-                }
-            }
+            Windows.Storage.StorageFile dfaFile = await storageFolder.CreateFileAsync(fileName,
+                Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            await Windows.Storage.FileIO.AppendTextAsync(dfaFile, $"{FileHeader}\n");
+            await Windows.Storage.FileIO.AppendLinesAsync(dfaFile,
+                _prefixStates.Select(s => s.ToString()).ToArray());
+          
         }
 
         /// <summary>

@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "queueable-scoreboard-assistant", "queueable-scoreboard-assistant.csproj", "{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "queueable-scoreboard-assistant-test", "..\queueable-scoreboard-assistant-test\queueable-scoreboard-assistant-test.csproj", "{ED2894F7-1574-47EC-98FB-2112F565562F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D} = {FA1710E2-CEA1-4290-ABAC-99FA430DC78D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

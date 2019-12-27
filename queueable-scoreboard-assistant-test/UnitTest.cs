@@ -24,7 +24,7 @@ namespace queueable_scoreboard_assistant_test
             };
             AutocompleteModelManager manager = new AutocompleteModelManager(prefixStates);
 
-            manager.DumpPrefixStatesToFile(@"test.dfa");
+            manager.DumpPrefixStatesAsync(@"test.dfa");
         }
     }
 }
