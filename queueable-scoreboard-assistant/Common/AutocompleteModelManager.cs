@@ -12,7 +12,7 @@ namespace queueable_scoreboard_assistant.Common
 
     }
 
-    class AutocompleteModelManager
+    public class AutocompleteModelManager
     {
         private const string FileHeader = "#dfa 1.0";
         
@@ -20,13 +20,23 @@ namespace queueable_scoreboard_assistant.Common
         private int _currentNode = 0;
         private List<PrefixState> _prefixStates;
 
+        public AutocompleteModelManager(List<PrefixState> prefixStates)
+        {
+            _prefixStates = prefixStates;
+        }
+
+        public AutocompleteModelManager(string path)
+        {
+            ReadPrefixStatesFromFile(path);
+        }
+
         /// <summary>
         /// Writes all of the prefix states into a file.
         /// 
         /// Overwrites the file at the given path.
         /// </summary>
         /// <param name="path">the path where the states file will be written</param>
-        private void DumpPrefixStatesToFile(string path)
+        public void DumpPrefixStatesToFile(string path)
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(path, false))
             {
