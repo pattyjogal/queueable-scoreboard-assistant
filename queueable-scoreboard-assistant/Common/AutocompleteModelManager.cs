@@ -49,6 +49,24 @@ namespace queueable_scoreboard_assistant.Common
         }
 
         /// <summary>
+        /// Writes the prefix states as bytes to a stream.
+        /// </summary>
+        /// <param name="stream">the stream to write bytes to</param>
+        public void WritePrefixStates(System.IO.Stream stream)
+        {
+            stream.Write(Encoding.UTF8.GetBytes($"{FileHeader}\n"),
+                0, FileHeader.Length + 1);
+
+            foreach (var state in _prefixStates)
+            {
+                stream.Write(Encoding.UTF8.GetBytes($"{state.ToString()}\n"),
+                    0, state.ToString().Length + 1);
+            }
+
+            stream.Flush();
+        }
+
+        /// <summary>
         /// Reads all of the prefix states from a file.
         /// </summary>
         /// <param name="path">the path where the states file exists</param>
