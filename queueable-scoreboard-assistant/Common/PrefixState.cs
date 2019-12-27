@@ -21,21 +21,30 @@ namespace queueable_scoreboard_assistant.Common
             }
 
             isAccepting = parts[0].Equals("1");
-            transitions = parts[1].Split(',').Select(Int32.Parse).ToArray();
+            foreach (string pair in parts[1].Split(','))
+            {
+                string[] separatedPair = pair.Split(':');
+                transitions.Add(char.Parse(separatedPair[0]), int.Parse(separatedPair[1]));
+            }
         }
+
         // Is this state an accepting state?
         public bool isAccepting;
 
-        // The list of state-indices that this state can transition to
-        public int[] transitions;
+        // The dict of char transitions to state-indices on this state
+        public Dictionary<char, int> transitions;
 
         public override string ToString()
         {
-            string output = isAccepting ? "0" : "1";
-            output += ";";
-            output += string.Join(",", transitions);
+            StringBuilder outputBuilder = new StringBuilder();
+            outputBuilder.Append(isAccepting ? "0" : "1");
+            outputBuilder.Append(";");
+            foreach (var item in transitions)
+            {
+                outputBuilder.Append($"{item.Key}:{item.Value}");
+            }
 
-            return output;
+            return outputBuilder.ToString();
         }
     }
 }
