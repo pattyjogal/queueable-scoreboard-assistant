@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace queueable_scoreboard_assistant.Common
 {
+    [Serializable()]
+    public class  InvalidFileFormatException : System.Exception
+    {
+
+    }
+
     class AutocompleteModelManager
     {
+        private const string FileHeader = "#dfa 1.0";
+        
         private string _prefix;
         private List<PrefixState> _prefixStates;
 
@@ -21,6 +29,7 @@ namespace queueable_scoreboard_assistant.Common
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(path, false))
             {
+                file.WriteLine(FileHeader);
                 foreach (PrefixState state in _prefixStates)
                 {
                     file.WriteLine(state.ToString());
@@ -34,7 +43,19 @@ namespace queueable_scoreboard_assistant.Common
         /// <param name="path">the path where the states file exists</param>
         private void ReadPrefixStatesFromFile(string path)
         {
+            using (System.IO.StreamReader file = new System.IO.StreamReader(path))
+            {
+                if (!file.ReadLine().Equals(FileHeader))
+                {
+                    throw new InvalidFileFormatException();
+                }
 
+                while (file.ReadLine() is string line)
+                {
+                    PrefixState prefixState = new PrefixState(line);
+                    
+                }
+            }
         }
 
         /// <summary>
