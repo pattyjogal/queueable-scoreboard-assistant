@@ -17,6 +17,7 @@ namespace queueable_scoreboard_assistant.Common
         private const string FileHeader = "#dfa 1.0";
         
         private string _prefix;
+        private int _currentNode = 0;
         private List<PrefixState> _prefixStates;
 
         /// <summary>
@@ -56,6 +57,35 @@ namespace queueable_scoreboard_assistant.Common
                     
                 }
             }
+        }
+        
+        /// <summary>
+        /// Lists all of the possible names in the language starting from the prefix.
+        /// </summary>
+        /// <param name="prefix">the starting point for the traversal</param>
+        /// <returns></returns>
+        public string[] ListPossibleNames(string prefix) 
+        {
+            List<string> names = new List<string>();
+            Stack<(int, string)> statePath = new Stack<(int, string)>();
+            statePath.Push((_currentNode, prefix));
+
+            while (statePath.Count() > 0)
+            {
+                var (stateIndex, currentName) = statePath.Pop();
+                PrefixState state = _prefixStates[stateIndex];
+                if (state.isAccepting)
+                {
+                    names.Add(currentName);
+                }
+
+                foreach (var (c, s) in state.transitions)
+                {
+                    statePath.Push((s, currentName + c));
+                }
+            }
+
+            return names.ToArray();
         }
 
         /// <summary>
