@@ -173,7 +173,7 @@ namespace queueable_scoreboard_assistant.Common
         }
 
         /// <summary>
-        /// Determins if a string is accepted by the autocomplete
+        /// Determines if a string is accepted by the autocomplete
         /// </summary>
         /// <param name="word">the word to check against the DFA's language</param>
         /// <returns></returns>
