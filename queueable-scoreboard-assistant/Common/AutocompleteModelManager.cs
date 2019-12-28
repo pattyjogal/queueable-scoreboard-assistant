@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,9 +19,12 @@ namespace queueable_scoreboard_assistant.Common
         private Windows.Storage.StorageFolder storageFolder =
             Windows.Storage.ApplicationData.Current.LocalFolder;
 
-        private string _prefix;
-        private int _currentNode = 0;
         private List<PrefixState> _prefixStates;
+
+        public AutocompleteModelManager()
+        {
+            _prefixStates = new List<PrefixState>();
+        }
 
         public AutocompleteModelManager(List<PrefixState> prefixStates)
         {
@@ -40,12 +44,17 @@ namespace queueable_scoreboard_assistant.Common
         /// <param name="fileName">the file name to write to in the app's local dir</param>
         public async void DumpPrefixStatesAsync(string fileName)
         {
-            Windows.Storage.StorageFile dfaFile = await storageFolder.CreateFileAsync(fileName,
+            Windows.Storage.StorageFile dfaFile = await storageFolder.CreateFileAsync("test.dfa",
                 Windows.Storage.CreationCollisionOption.ReplaceExisting);
-            await Windows.Storage.FileIO.AppendTextAsync(dfaFile, $"{FileHeader}\n");
-            await Windows.Storage.FileIO.AppendLinesAsync(dfaFile,
-                _prefixStates.Select(s => s.ToString()).ToArray());
-          
+            var fileStream =
+                await dfaFile.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite);
+
+            using (var inputStream = fileStream.GetOutputStreamAt(0))
+            {
+                WritePrefixStates(inputStream.AsStreamForWrite());
+            }
+
+
         }
 
         /// <summary>
@@ -96,7 +105,7 @@ namespace queueable_scoreboard_assistant.Common
         {
             List<string> names = new List<string>();
             Stack<(int, string)> statePath = new Stack<(int, string)>();
-            statePath.Push((_currentNode, prefix));
+            statePath.Push((0, prefix));
 
             while (statePath.Count() > 0)
             {
@@ -120,9 +129,47 @@ namespace queueable_scoreboard_assistant.Common
         /// Adds a name not currently handled by the DFA to it.
         /// </summary>
         /// <param name="newName">the name to add to the DFA</param>
-        private void WriteNewName(string newName)
+        public void WriteNewName(string newName)
         {
+            // Handle the case where the language is empty
+            if (_prefixStates.Count == 0)
+            {
+                _prefixStates.Add(new PrefixState(false));
+            }
 
+            PrefixState state = _prefixStates[0];
+
+            while (state.transitions.ContainsKey(newName[0]))
+            {
+                state = _prefixStates[state.transitions[newName[0]]];
+                newName = newName.Remove(0, 1);
+            }
+
+            while (newName.Length > 0)
+            {               
+                _prefixStates.Add(new PrefixState(newName.Length == 1));
+                // Link the current state to the newly created one
+                state.transitions.Add(newName[0], _prefixStates.Count - 1);
+                state = _prefixStates.Last();
+                newName = newName.Remove(0, 1);
+            }
+        }
+
+        /// <summary>
+        /// Determins if a string is accepted by the autocomplete
+        /// </summary>
+        /// <param name="word">the word to check against the DFA's language</param>
+        /// <returns></returns>
+        public bool CheckInLanguage(string word)
+        {
+            PrefixState state = _prefixStates[0];
+            while (word.Count() > 0 && state.transitions.ContainsKey(word[0]))
+            {
+                state = _prefixStates[state.transitions[word[0]]];
+                word = word.Remove(0, 1);
+            }
+
+            return state.isAccepting;
         }
 
         /// <summary>
@@ -130,17 +177,6 @@ namespace queueable_scoreboard_assistant.Common
         /// </summary>
         /// <param name="selectedName">the name that the user chose</param>
         public void OnUserSelect(string selectedName) { 
-
-        }
-
-        /// <summary>
-        /// Adds a character to the prefix search. 
-        /// 
-        /// The maintained DFA requires us to keep track of the traversed path, which is done through a prefix.
-        /// </summary>
-        /// <param name="addition"></param>
-        public void AddPrefixChar(char addition)
-        {
 
         }
     }

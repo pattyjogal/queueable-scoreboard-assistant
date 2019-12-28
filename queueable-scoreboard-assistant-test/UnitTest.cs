@@ -15,7 +15,7 @@ namespace queueable_scoreboard_assistant_test
         private Windows.Storage.StorageFolder storageFolder =
             Windows.Storage.ApplicationData.Current.LocalFolder;
         [TestMethod]
-        public async Task DFAFromStringTestAsync()
+        public void DFAFromStringTest()
         {
             List<String> expectedStates = new List<string>()
             {
@@ -30,16 +30,6 @@ namespace queueable_scoreboard_assistant_test
                 expectedStates.Select(s => new PrefixState(s)).ToList();
             AutocompleteModelManager manager = new AutocompleteModelManager(prefixStates);
             
-            Windows.Storage.StorageFile dfaFile = await storageFolder.CreateFileAsync("test.dfa",
-                Windows.Storage.CreationCollisionOption.ReplaceExisting);
-            var fileStream = 
-                await dfaFile.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite);
-            
-            using (var inputStream = fileStream.GetOutputStreamAt(0))
-            {
-                manager.WritePrefixStates(inputStream.AsStreamForWrite());
-            }
-
             using (var stream = new MemoryStream())
             {
                 manager.WritePrefixStates(stream);
@@ -51,8 +41,18 @@ namespace queueable_scoreboard_assistant_test
                                     actualStateString);
                 }
             }
+        }
 
+        [TestMethod]
+        public void AddNameToDFATest()
+        {
+            // Start an empty language
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+            manager.WriteNewName("feed");
+            manager.WriteNewName("farm");
 
+            Assert.IsTrue(manager.CheckInLanguage("feed"));
+            Assert.IsTrue(manager.CheckInLanguage("farm"));
         }
     }
 }

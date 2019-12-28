@@ -9,6 +9,15 @@ namespace queueable_scoreboard_assistant.Common
     public class PrefixState
     {
         /// <summary>
+        /// Basic constructor
+        /// </summary>
+        /// <param name="isAccepting"></param>
+        public PrefixState(bool isAccepting)
+        {
+            this.isAccepting = isAccepting;
+        }
+
+        /// <summary>
         /// Creates a prefix state from a string that ToString() creates.
         /// </summary>
         /// <param name="state">a string in the PrefixState.ToString() format</param>
