@@ -46,13 +46,23 @@ namespace queueable_scoreboard_assistant_test
         [TestMethod]
         public void AddNameToDFATest()
         {
-            // Start an empty language
             AutocompleteModelManager manager = new AutocompleteModelManager();
             manager.WriteNewName("feed");
             manager.WriteNewName("farm");
 
             Assert.IsTrue(manager.CheckInLanguage("feed"));
             Assert.IsTrue(manager.CheckInLanguage("farm"));
+        }
+
+        [TestMethod]
+        public void LongMatchingPrefixTest()
+        {
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+            manager.WriteNewName("abcdefgdddf");
+            manager.WriteNewName("abcdefgfff");
+
+            Assert.IsTrue(manager.CheckInLanguage("abcdefgdddf"));
+            Assert.IsTrue(manager.CheckInLanguage("abcdefgfff"));
         }
     }
 }
