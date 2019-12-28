@@ -7,8 +7,31 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="7*"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition Width="3*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="1" Text="0" TextWrapping="Wrap" Height="100" Width="75"
+                 FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" TextChanged="TextBox_TextChanged"/>
+            <TextBox Grid.Column="3" Text="0" TextWrapping="Wrap" Height="100" Width="75"
+            FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" TextChanged="TextBox_TextChanged"/>
+            <Button Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="75"/>
+            <Button Background="#00000000" Content="&#xE70E;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="75"/>
+            <Button Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0"></Button>
+            <Button Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="75"/>
+            <Button Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="75"/>
+        </Grid>
     </Grid>
+
+
+
 </Page>
