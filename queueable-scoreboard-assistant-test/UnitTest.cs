@@ -30,11 +30,11 @@ namespace queueable_scoreboard_assistant_test
             };
             List<PrefixState> prefixStates =
                 expectedStates.Select(s => new PrefixState(s)).ToList();
-            AutocompleteModelManager manager = new AutocompleteModelManager(prefixStates);
+            LanguageDfa dfa = new LanguageDfa(prefixStates);
             
             using (var stream = new MemoryStream())
             {
-                manager.WritePrefixStates(stream);
+                dfa.WritePrefixStates(stream);
                 stream.Position = 0;
                 using (var reader = new StreamReader(stream))
                 {
@@ -48,62 +48,62 @@ namespace queueable_scoreboard_assistant_test
         [TestMethod]
         public void AddNameToDFATest()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
-            manager.WriteNewName("feed");
-            manager.WriteNewName("farm");
+            LanguageDfa dfa = new LanguageDfa();
+            dfa.WriteNewName("feed");
+            dfa.WriteNewName("farm");
 
-            Assert.IsTrue(manager.CheckInLanguage("feed"));
-            Assert.IsTrue(manager.CheckInLanguage("farm"));
+            Assert.IsTrue(dfa.Contains("feed"));
+            Assert.IsTrue(dfa.Contains("farm"));
         }
 
         [TestMethod]
         public void LongMatchingPrefixTest()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
-            manager.WriteNewName("abcdefgdddf");
-            manager.WriteNewName("abcdefgfff");
+            LanguageDfa dfa = new LanguageDfa();
+            dfa.WriteNewName("abcdefgdddf");
+            dfa.WriteNewName("abcdefgfff");
 
-            Assert.IsTrue(manager.CheckInLanguage("abcdefgdddf"));
-            Assert.IsTrue(manager.CheckInLanguage("abcdefgfff"));
+            Assert.IsTrue(dfa.Contains("abcdefgdddf"));
+            Assert.IsTrue(dfa.Contains("abcdefgfff"));
         }
 
         [TestMethod]
         public void SubstringDoesNotBreakTest()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
-            manager.WriteNewName("coleman");
-            manager.WriteNewName("cole");
+            LanguageDfa dfa = new LanguageDfa();
+            dfa.WriteNewName("coleman");
+            dfa.WriteNewName("cole");
 
-            Assert.IsTrue(manager.CheckInLanguage("cole"));
-            Assert.IsTrue(manager.CheckInLanguage("coleman"));
+            Assert.IsTrue(dfa.Contains("cole"));
+            Assert.IsTrue(dfa.Contains("coleman"));
         }
 
         [TestMethod]
         public void BasicListStringsTest()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
-            manager.WriteNewName("abcd");
-            manager.WriteNewName("wxyz");
+            LanguageDfa dfa = new LanguageDfa();
+            dfa.WriteNewName("abcd");
+            dfa.WriteNewName("wxyz");
 
-            Assert.IsTrue(manager.ListPossibleNames("").Contains("abcd"));
-            Assert.IsTrue(manager.ListPossibleNames("").Contains("wxyz"));
+            Assert.IsTrue(dfa.ListPossibleNames("").Contains("abcd"));
+            Assert.IsTrue(dfa.ListPossibleNames("").Contains("wxyz"));
         }
 
         [TestMethod]
         public void PrefixListStringsTest()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
-            manager.WriteNewName("abcd");
-            manager.WriteNewName("wxyz");
+            LanguageDfa dfa = new LanguageDfa();
+            dfa.WriteNewName("abcd");
+            dfa.WriteNewName("wxyz");
 
-            Assert.IsTrue(manager.ListPossibleNames("abc").Contains("abcd"));
-            Assert.IsFalse(manager.ListPossibleNames("abc").Contains("wxyz"));
+            Assert.IsTrue(dfa.ListPossibleNames("abc").Contains("abcd"));
+            Assert.IsFalse(dfa.ListPossibleNames("abc").Contains("wxyz"));
         }
 
         [TestMethod]
         public async Task LongListStringsTestAsync()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
+            LanguageDfa dfa = new LanguageDfa();
             
             // Load the large list of names
             StorageFolder assets = await Package.Current.InstalledLocation.GetFolderAsync("Assets");
@@ -111,23 +111,23 @@ namespace queueable_scoreboard_assistant_test
             var namesList = await FileIO.ReadLinesAsync(namesListFile);
             foreach (string name in namesList)
             {
-                manager.WriteNewName(name);
+                dfa.WriteNewName(name);
             }
 
             foreach (string name in namesList)
             {
-                if (!manager.CheckInLanguage(name))
+                if (!dfa.Contains(name))
                 {
                     System.Diagnostics.Debugger.Break();
                 }
-                Assert.IsTrue(manager.CheckInLanguage(name));
+                Assert.IsTrue(dfa.Contains(name));
             }
         }
 
         [TestMethod]
         public async Task AutocompleteLongListStringsTestAsync()
         {
-            AutocompleteModelManager manager = new AutocompleteModelManager();
+            LanguageDfa dfa = new LanguageDfa();
 
             // Load the large list of names
             StorageFolder assets = await Package.Current.InstalledLocation.GetFolderAsync("Assets");
@@ -135,10 +135,10 @@ namespace queueable_scoreboard_assistant_test
             var namesList = await FileIO.ReadLinesAsync(namesListFile);
             foreach (string name in namesList)
             {
-                manager.WriteNewName(name);
+                dfa.WriteNewName(name);
             }
 
-            string[] foundNames = manager.ListPossibleNames("STE");
+            string[] foundNames = dfa.ListPossibleNames("STE");
             Assert.AreEqual(7, foundNames.Length);
             Assert.IsTrue(foundNames.Contains("STEIN"));
             Assert.IsTrue(foundNames.Contains("STEWART"));
@@ -147,6 +147,21 @@ namespace queueable_scoreboard_assistant_test
             Assert.IsTrue(foundNames.Contains("STEELE"));
             Assert.IsTrue(foundNames.Contains("STEVENSON"));
             Assert.IsTrue(foundNames.Contains("STEPHENSON"));
+        }
+
+        [TestMethod]
+        public async Task InitDFAFromFileTestAsync()
+        {
+            LanguageDfa dfa = new LanguageDfa();
+
+            // Load the test file
+            StorageFolder assets = await Package.Current.InstalledLocation.GetFolderAsync("Assets");
+            StorageFile testFile = await assets.GetFileAsync("test.dfa");
+            dfa.ReadPrefixStates(await testFile.OpenStreamForReadAsync());
+
+            Assert.AreEqual(2, dfa.ListPossibleNames("").Length);
+            Assert.IsTrue(dfa.Contains("feed"));
+            Assert.IsTrue(dfa.Contains("farm"));
         }
     }
 }

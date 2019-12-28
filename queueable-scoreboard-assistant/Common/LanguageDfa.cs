@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 namespace queueable_scoreboard_assistant.Common
 {
     [Serializable()]
-    public class  InvalidFileFormatException : System.Exception
+    public class InvalidFileFormatException : System.Exception
     {
 
     }
 
-    public class AutocompleteModelManager
+    public class LanguageDfa
     {
         private const string FileHeader = "#dfa 1.0";
         private Windows.Storage.StorageFolder storageFolder =
@@ -21,19 +21,14 @@ namespace queueable_scoreboard_assistant.Common
 
         private List<PrefixState> _prefixStates;
 
-        public AutocompleteModelManager()
+        public LanguageDfa()
         {
             _prefixStates = new List<PrefixState>();
         }
 
-        public AutocompleteModelManager(List<PrefixState> prefixStates)
+        public LanguageDfa(List<PrefixState> prefixStates)
         {
             _prefixStates = prefixStates;
-        }
-
-        public AutocompleteModelManager(string path)
-        {
-            ReadPrefixStatesFromFile(path);
         }
 
         /// <summary>
@@ -44,7 +39,7 @@ namespace queueable_scoreboard_assistant.Common
         /// <param name="fileName">the file name to write to in the app's local dir</param>
         public async void DumpPrefixStatesAsync(string fileName)
         {
-            Windows.Storage.StorageFile dfaFile = await storageFolder.CreateFileAsync("test.dfa",
+            Windows.Storage.StorageFile dfaFile = await storageFolder.CreateFileAsync(fileName,
                 Windows.Storage.CreationCollisionOption.ReplaceExisting);
             var fileStream =
                 await dfaFile.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite);
@@ -76,32 +71,31 @@ namespace queueable_scoreboard_assistant.Common
         }
 
         /// <summary>
-        /// Reads all of the prefix states from a file.
+        /// Reads all of the prefix states from a stream.
         /// </summary>
-        /// <param name="path">the path where the states file exists</param>
-        private void ReadPrefixStatesFromFile(string path)
+        /// <param name="path">the stream to read bytes from</param>
+        public void ReadPrefixStates(System.IO.Stream stream)
         {
-            using (System.IO.StreamReader file = new System.IO.StreamReader(path))
-            {
-                if (!file.ReadLine().Equals(FileHeader))
-                {
-                    throw new InvalidFileFormatException();
-                }
+            StreamReader streamReader = new StreamReader(stream);
 
-                while (file.ReadLine() is string line)
-                {
-                    PrefixState prefixState = new PrefixState(line);
-                    
-                }
+            if (!streamReader.ReadLine().Equals(FileHeader))
+            {
+                throw new InvalidFileFormatException();
+            }
+
+            while (streamReader.ReadLine() is string line)
+            {
+                _prefixStates.Add(new PrefixState(line));
+                
             }
         }
-        
+
         /// <summary>
         /// Lists all of the possible names in the language starting from the prefix.
         /// </summary>
         /// <param name="prefix">the starting point for the traversal</param>
         /// <returns></returns>
-        public string[] ListPossibleNames(string prefix) 
+        public string[] ListPossibleNames(string prefix)
         {
             List<string> names = new List<string>();
             Stack<(int, string)> statePath = new Stack<(int, string)>();
@@ -163,7 +157,7 @@ namespace queueable_scoreboard_assistant.Common
             }
 
             while (newName.Length > 0)
-            {               
+            {
                 _prefixStates.Add(new PrefixState(newName.Length == 1));
                 // Link the current state to the newly created one
                 state.transitions.Add(newName[0], _prefixStates.Count - 1);
@@ -177,18 +171,10 @@ namespace queueable_scoreboard_assistant.Common
         /// </summary>
         /// <param name="word">the word to check against the DFA's language</param>
         /// <returns></returns>
-        public bool CheckInLanguage(string word)
+        public bool Contains(string word)
         {
             var (_, state) = FindPrefixState(word);
             return state.isAccepting;
-        }
-
-        /// <summary>
-        /// Defines the response that the manager takes when a user selects a name.
-        /// </summary>
-        /// <param name="selectedName">the name that the user chose</param>
-        public void OnUserSelect(string selectedName) { 
-
         }
 
         private (int, PrefixState) FindPrefixState(string prefix)
