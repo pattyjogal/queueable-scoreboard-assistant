@@ -26,5 +26,57 @@ namespace queueable_scoreboard_assistant
         {
             this.InitializeComponent();
         }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void Button_Click_LeftDecrement(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LeftScore.Text = (int.Parse(LeftScore.Text) - 1).ToString();
+            } catch
+            {
+                LeftScore.Text = "NaN";
+            }
+        }
+
+        private void Button_Click_RightDecrement(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RightScore.Text = (int.Parse(RightScore.Text) - 1).ToString();
+            }
+            catch
+            {
+                RightScore.Text = "NaN";
+            }
+        }
+
+        private void Button_Click_LeftIncrement(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LeftScore.Text = (int.Parse(LeftScore.Text) + 1).ToString();
+            }
+            catch
+            {
+                LeftScore.Text = "NaN";
+            }
+        }
+
+        private void Button_Click_RightIncrement(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RightScore.Text = (int.Parse(RightScore.Text) + 1).ToString();
+            }
+            catch
+            {
+                RightScore.Text = "NaN";
+            }
+        }
     }
 }
