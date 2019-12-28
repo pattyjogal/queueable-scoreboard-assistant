@@ -105,7 +105,11 @@ namespace queueable_scoreboard_assistant.Common
         {
             List<string> names = new List<string>();
             Stack<(int, string)> statePath = new Stack<(int, string)>();
-            statePath.Push((0, prefix));
+
+            // Traverse to the state after reading the prefix
+            var (startStateIndex, _) = FindPrefixState(prefix);
+
+            statePath.Push((startStateIndex, prefix));
 
             while (statePath.Count() > 0)
             {
@@ -131,6 +135,12 @@ namespace queueable_scoreboard_assistant.Common
         /// <param name="newName">the name to add to the DFA</param>
         public void WriteNewName(string newName)
         {
+            // The language does not accept empty strings
+            if (newName.Length == 0)
+            {
+                return;
+            }
+
             // Handle the case where the language is empty
             if (_prefixStates.Count == 0)
             {
@@ -139,10 +149,17 @@ namespace queueable_scoreboard_assistant.Common
 
             PrefixState state = _prefixStates[0];
 
-            while (state.transitions.ContainsKey(newName[0]))
+            while (newName.Length > 0 && state.transitions.ContainsKey(newName[0]))
             {
                 state = _prefixStates[state.transitions[newName[0]]];
                 newName = newName.Remove(0, 1);
+            }
+
+            // If the whole name was consumed, then this name is a substring of another name
+            // in the language, so we just make this an accepting state.
+            if (newName.Length == 0)
+            {
+                state.isAccepting = true;
             }
 
             while (newName.Length > 0)
@@ -162,13 +179,7 @@ namespace queueable_scoreboard_assistant.Common
         /// <returns></returns>
         public bool CheckInLanguage(string word)
         {
-            PrefixState state = _prefixStates[0];
-            while (word.Count() > 0 && state.transitions.ContainsKey(word[0]))
-            {
-                state = _prefixStates[state.transitions[word[0]]];
-                word = word.Remove(0, 1);
-            }
-
+            var (_, state) = FindPrefixState(word);
             return state.isAccepting;
         }
 
@@ -178,6 +189,20 @@ namespace queueable_scoreboard_assistant.Common
         /// <param name="selectedName">the name that the user chose</param>
         public void OnUserSelect(string selectedName) { 
 
+        }
+
+        private (int, PrefixState) FindPrefixState(string prefix)
+        {
+            int stateIndex = 0;
+            PrefixState state = _prefixStates[stateIndex];
+            while (prefix.Count() > 0 && state.transitions.ContainsKey(prefix[0]))
+            {
+                stateIndex = state.transitions[prefix[0]];
+                state = _prefixStates[stateIndex];
+                prefix = prefix.Remove(0, 1);
+            }
+
+            return (stateIndex, state);
         }
     }
 }

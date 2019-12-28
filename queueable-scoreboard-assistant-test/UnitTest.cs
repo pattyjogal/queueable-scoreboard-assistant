@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using queueable_scoreboard_assistant.Common;
 using System.Threading.Tasks;
 using System.Linq;
+using Windows.Storage;
+using Windows.ApplicationModel;
 
 namespace queueable_scoreboard_assistant_test
 {
@@ -63,6 +65,88 @@ namespace queueable_scoreboard_assistant_test
 
             Assert.IsTrue(manager.CheckInLanguage("abcdefgdddf"));
             Assert.IsTrue(manager.CheckInLanguage("abcdefgfff"));
+        }
+
+        [TestMethod]
+        public void SubstringDoesNotBreakTest()
+        {
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+            manager.WriteNewName("coleman");
+            manager.WriteNewName("cole");
+
+            Assert.IsTrue(manager.CheckInLanguage("cole"));
+            Assert.IsTrue(manager.CheckInLanguage("coleman"));
+        }
+
+        [TestMethod]
+        public void BasicListStringsTest()
+        {
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+            manager.WriteNewName("abcd");
+            manager.WriteNewName("wxyz");
+
+            Assert.IsTrue(manager.ListPossibleNames("").Contains("abcd"));
+            Assert.IsTrue(manager.ListPossibleNames("").Contains("wxyz"));
+        }
+
+        [TestMethod]
+        public void PrefixListStringsTest()
+        {
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+            manager.WriteNewName("abcd");
+            manager.WriteNewName("wxyz");
+
+            Assert.IsTrue(manager.ListPossibleNames("abc").Contains("abcd"));
+            Assert.IsFalse(manager.ListPossibleNames("abc").Contains("wxyz"));
+        }
+
+        [TestMethod]
+        public async Task LongListStringsTestAsync()
+        {
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+            
+            // Load the large list of names
+            StorageFolder assets = await Package.Current.InstalledLocation.GetFolderAsync("Assets");
+            StorageFile namesListFile = await assets.GetFileAsync("names.txt");
+            var namesList = await FileIO.ReadLinesAsync(namesListFile);
+            foreach (string name in namesList)
+            {
+                manager.WriteNewName(name);
+            }
+
+            foreach (string name in namesList)
+            {
+                if (!manager.CheckInLanguage(name))
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+                Assert.IsTrue(manager.CheckInLanguage(name));
+            }
+        }
+
+        [TestMethod]
+        public async Task AutocompleteLongListStringsTestAsync()
+        {
+            AutocompleteModelManager manager = new AutocompleteModelManager();
+
+            // Load the large list of names
+            StorageFolder assets = await Package.Current.InstalledLocation.GetFolderAsync("Assets");
+            StorageFile namesListFile = await assets.GetFileAsync("names.txt");
+            var namesList = await FileIO.ReadLinesAsync(namesListFile);
+            foreach (string name in namesList)
+            {
+                manager.WriteNewName(name);
+            }
+
+            string[] foundNames = manager.ListPossibleNames("STE");
+            Assert.AreEqual(7, foundNames.Length);
+            Assert.IsTrue(foundNames.Contains("STEIN"));
+            Assert.IsTrue(foundNames.Contains("STEWART"));
+            Assert.IsTrue(foundNames.Contains("STEVENS"));
+            Assert.IsTrue(foundNames.Contains("STEPHENS"));
+            Assert.IsTrue(foundNames.Contains("STEELE"));
+            Assert.IsTrue(foundNames.Contains("STEVENSON"));
+            Assert.IsTrue(foundNames.Contains("STEPHENSON"));
         }
     }
 }
