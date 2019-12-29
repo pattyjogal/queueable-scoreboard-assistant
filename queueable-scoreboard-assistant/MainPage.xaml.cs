@@ -110,8 +110,22 @@ namespace queueable_scoreboard_assistant
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                
+                string[] matches = languageDfa.ListPossibleStrings(sender.Text);
+                sender.ItemsSource = matches.ToList();
             }
         }
+        private void AutoSuggestBox_QuerySubmitted_Player(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                // User selected an item from the suggestion list, take an action on it here.
+            }
+            else
+            {
+                // The user wants to commit a new player name
+                languageDfa.AddNewString(args.QueryText);
+            }
+        }
+
     }
 }

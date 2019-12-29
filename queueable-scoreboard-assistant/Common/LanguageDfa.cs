@@ -124,6 +124,12 @@ namespace queueable_scoreboard_assistant.Common
             // Traverse to the state after reading the prefix
             var (startStateIndex, _) = FindPrefixState(prefix);
 
+            // If we can't find the start state, then there are no possible strings
+            if (startStateIndex == -1)
+            {
+                return new string[0];
+            }
+
             statePath.Push((startStateIndex, prefix));
 
             while (statePath.Count() > 0)
@@ -195,6 +201,10 @@ namespace queueable_scoreboard_assistant.Common
         public bool Contains(string word)
         {
             var (_, state) = FindPrefixState(word);
+            if (state == null)
+            {
+                return false;
+            }
             return state.isAccepting;
         }
 
@@ -209,7 +219,8 @@ namespace queueable_scoreboard_assistant.Common
                 prefix = prefix.Remove(0, 1);
             }
 
-            return (stateIndex, state);
+            // If any of the prefix string is left, then this state doesn't exist
+            return prefix.Length == 0 ? (stateIndex, state) : (-1, null);
         }
     }
 }
