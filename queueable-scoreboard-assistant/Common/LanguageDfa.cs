@@ -107,11 +107,17 @@ namespace queueable_scoreboard_assistant.Common
 
         /// <summary>
         /// Lists all of the possible strings in the language starting from the prefix.
+        /// 
         /// </summary>
         /// <param name="prefix">the starting point for the traversal</param>
-        /// <returns></returns>
+        /// <returns>A list of all the possible strings with the given prefix. Empty if no match or empty language.</returns>
         public string[] ListPossibleStrings(string prefix)
         {
+            if (_prefixStates.Count == 0)
+            {
+                return new string[0];
+            }
+
             List<string> strings = new List<string>();
             Stack<(int, string)> statePath = new Stack<(int, string)>();
 
