@@ -24,6 +24,9 @@ namespace queueable_scoreboard_assistant
     public sealed partial class MainPage : Page
     {
         private const string DfaStoreFilename = "names.dfa";
+        private readonly Windows.Storage.StorageFolder storageFolder =
+            Windows.Storage.ApplicationData.Current.LocalFolder;
+
 
         private LanguageDfa languageDfa;
 
@@ -40,9 +43,6 @@ namespace queueable_scoreboard_assistant
             if (languageDfa == null)
             {
                 // Load the existing autocomplete language from the stored file
-                Windows.Storage.StorageFolder storageFolder =
-                    Windows.Storage.ApplicationData.Current.LocalFolder;
-
                 Windows.Storage.StorageFile dfaFile;
                 try
                 {
@@ -114,7 +114,8 @@ namespace queueable_scoreboard_assistant
                 sender.ItemsSource = matches.ToList();
             }
         }
-        private void AutoSuggestBox_QuerySubmitted_Player(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+
+        private async void AutoSuggestBox_QuerySubmitted_Player(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null)
             {
@@ -124,6 +125,11 @@ namespace queueable_scoreboard_assistant
             {
                 // The user wants to commit a new player name
                 languageDfa.AddNewString(args.QueryText);
+
+                // TODO: Intoduce an option to save to file on each new name vs. saving when the program closes
+                Windows.Storage.StorageFile dfaFile = await storageFolder.GetFileAsync(DfaStoreFilename);
+                using (Stream stream = await dfaFile.OpenStreamForWriteAsync())
+                    languageDfa.WritePrefixStates(stream);
             }
         }
 
