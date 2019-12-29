@@ -13,6 +13,21 @@ namespace queueable_scoreboard_assistant.Common
 
     }
 
+    /// <summary>
+    /// A class to represent a collection of strings (a language).
+    /// 
+    /// The class supports five basic operations, with some extensions
+    /// <list type="bullet">
+    ///     <item><code>AddNewString</code> - Adding a string to the language</item>
+    ///     <item><code>ListPossibleStrings</code> - Return a list of all the strings 
+    ///     in this language</item>
+    ///     <item><code>Contains</code> - Check to see if a string is in the language with a prefix</item>
+    ///     <item><code>WritePrefixStates</code> - Write the states of the language to a stream</item>
+    ///     <item><code>ReadPrefixStates</code> - Read the states from a stream into the language</item>
+    /// </list>
+    /// 
+    /// This DFA is optimized to work with the prefixes of strings for autocomplete purposes.
+    /// </summary>
     public class LanguageDfa
     {
         private const string FileHeader = "#dfa 1.0";
@@ -91,13 +106,13 @@ namespace queueable_scoreboard_assistant.Common
         }
 
         /// <summary>
-        /// Lists all of the possible names in the language starting from the prefix.
+        /// Lists all of the possible strings in the language starting from the prefix.
         /// </summary>
         /// <param name="prefix">the starting point for the traversal</param>
         /// <returns></returns>
-        public string[] ListPossibleNames(string prefix)
+        public string[] ListPossibleStrings(string prefix)
         {
-            List<string> names = new List<string>();
+            List<string> strings = new List<string>();
             Stack<(int, string)> statePath = new Stack<(int, string)>();
 
             // Traverse to the state after reading the prefix
@@ -107,30 +122,30 @@ namespace queueable_scoreboard_assistant.Common
 
             while (statePath.Count() > 0)
             {
-                var (stateIndex, currentName) = statePath.Pop();
+                var (stateIndex, currentString) = statePath.Pop();
                 PrefixState state = _prefixStates[stateIndex];
                 if (state.isAccepting)
                 {
-                    names.Add(currentName);
+                    strings.Add(currentString);
                 }
 
                 foreach (var (c, s) in state.transitions)
                 {
-                    statePath.Push((s, currentName + c));
+                    statePath.Push((s, currentString + c));
                 }
             }
 
-            return names.ToArray();
+            return strings.ToArray();
         }
 
         /// <summary>
-        /// Adds a name not currently handled by the DFA to it.
+        /// Adds a new string to the language represented by this DFA.
         /// </summary>
-        /// <param name="newName">the name to add to the DFA</param>
-        public void WriteNewName(string newName)
+        /// <param name="stringToAdd">the string to add to the DFA</param>
+        public void AddNewString(string stringToAdd)
         {
             // The language does not accept empty strings
-            if (newName.Length == 0)
+            if (stringToAdd.Length == 0)
             {
                 return;
             }
@@ -143,26 +158,26 @@ namespace queueable_scoreboard_assistant.Common
 
             PrefixState state = _prefixStates[0];
 
-            while (newName.Length > 0 && state.transitions.ContainsKey(newName[0]))
+            while (stringToAdd.Length > 0 && state.transitions.ContainsKey(stringToAdd[0]))
             {
-                state = _prefixStates[state.transitions[newName[0]]];
-                newName = newName.Remove(0, 1);
+                state = _prefixStates[state.transitions[stringToAdd[0]]];
+                stringToAdd = stringToAdd.Remove(0, 1);
             }
 
-            // If the whole name was consumed, then this name is a substring of another name
+            // If the whole string was consumed, then this string is a substring of another string
             // in the language, so we just make this an accepting state.
-            if (newName.Length == 0)
+            if (stringToAdd.Length == 0)
             {
                 state.isAccepting = true;
             }
 
-            while (newName.Length > 0)
+            while (stringToAdd.Length > 0)
             {
-                _prefixStates.Add(new PrefixState(newName.Length == 1));
+                _prefixStates.Add(new PrefixState(stringToAdd.Length == 1));
                 // Link the current state to the newly created one
-                state.transitions.Add(newName[0], _prefixStates.Count - 1);
+                state.transitions.Add(stringToAdd[0], _prefixStates.Count - 1);
                 state = _prefixStates.Last();
-                newName = newName.Remove(0, 1);
+                stringToAdd = stringToAdd.Remove(0, 1);
             }
         }
 

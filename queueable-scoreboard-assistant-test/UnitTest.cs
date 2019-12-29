@@ -49,8 +49,8 @@ namespace queueable_scoreboard_assistant_test
         public void AddNameToDFATest()
         {
             LanguageDfa dfa = new LanguageDfa();
-            dfa.WriteNewName("feed");
-            dfa.WriteNewName("farm");
+            dfa.AddNewString("feed");
+            dfa.AddNewString("farm");
 
             Assert.IsTrue(dfa.Contains("feed"));
             Assert.IsTrue(dfa.Contains("farm"));
@@ -60,8 +60,8 @@ namespace queueable_scoreboard_assistant_test
         public void LongMatchingPrefixTest()
         {
             LanguageDfa dfa = new LanguageDfa();
-            dfa.WriteNewName("abcdefgdddf");
-            dfa.WriteNewName("abcdefgfff");
+            dfa.AddNewString("abcdefgdddf");
+            dfa.AddNewString("abcdefgfff");
 
             Assert.IsTrue(dfa.Contains("abcdefgdddf"));
             Assert.IsTrue(dfa.Contains("abcdefgfff"));
@@ -71,8 +71,8 @@ namespace queueable_scoreboard_assistant_test
         public void SubstringDoesNotBreakTest()
         {
             LanguageDfa dfa = new LanguageDfa();
-            dfa.WriteNewName("coleman");
-            dfa.WriteNewName("cole");
+            dfa.AddNewString("coleman");
+            dfa.AddNewString("cole");
 
             Assert.IsTrue(dfa.Contains("cole"));
             Assert.IsTrue(dfa.Contains("coleman"));
@@ -82,22 +82,22 @@ namespace queueable_scoreboard_assistant_test
         public void BasicListStringsTest()
         {
             LanguageDfa dfa = new LanguageDfa();
-            dfa.WriteNewName("abcd");
-            dfa.WriteNewName("wxyz");
+            dfa.AddNewString("abcd");
+            dfa.AddNewString("wxyz");
 
-            Assert.IsTrue(dfa.ListPossibleNames("").Contains("abcd"));
-            Assert.IsTrue(dfa.ListPossibleNames("").Contains("wxyz"));
+            Assert.IsTrue(dfa.ListPossibleStrings("").Contains("abcd"));
+            Assert.IsTrue(dfa.ListPossibleStrings("").Contains("wxyz"));
         }
 
         [TestMethod]
         public void PrefixListStringsTest()
         {
             LanguageDfa dfa = new LanguageDfa();
-            dfa.WriteNewName("abcd");
-            dfa.WriteNewName("wxyz");
+            dfa.AddNewString("abcd");
+            dfa.AddNewString("wxyz");
 
-            Assert.IsTrue(dfa.ListPossibleNames("abc").Contains("abcd"));
-            Assert.IsFalse(dfa.ListPossibleNames("abc").Contains("wxyz"));
+            Assert.IsTrue(dfa.ListPossibleStrings("abc").Contains("abcd"));
+            Assert.IsFalse(dfa.ListPossibleStrings("abc").Contains("wxyz"));
         }
 
         [TestMethod]
@@ -111,7 +111,7 @@ namespace queueable_scoreboard_assistant_test
             var namesList = await FileIO.ReadLinesAsync(namesListFile);
             foreach (string name in namesList)
             {
-                dfa.WriteNewName(name);
+                dfa.AddNewString(name);
             }
 
             foreach (string name in namesList)
@@ -135,10 +135,10 @@ namespace queueable_scoreboard_assistant_test
             var namesList = await FileIO.ReadLinesAsync(namesListFile);
             foreach (string name in namesList)
             {
-                dfa.WriteNewName(name);
+                dfa.AddNewString(name);
             }
 
-            string[] foundNames = dfa.ListPossibleNames("STE");
+            string[] foundNames = dfa.ListPossibleStrings("STE");
             Assert.AreEqual(7, foundNames.Length);
             Assert.IsTrue(foundNames.Contains("STEIN"));
             Assert.IsTrue(foundNames.Contains("STEWART"));
@@ -159,7 +159,7 @@ namespace queueable_scoreboard_assistant_test
             StorageFile testFile = await assets.GetFileAsync("test.dfa");
             dfa.ReadPrefixStates(await testFile.OpenStreamForReadAsync());
 
-            Assert.AreEqual(2, dfa.ListPossibleNames("").Length);
+            Assert.AreEqual(2, dfa.ListPossibleStrings("").Length);
             Assert.IsTrue(dfa.Contains("feed"));
             Assert.IsTrue(dfa.Contains("farm"));
         }
