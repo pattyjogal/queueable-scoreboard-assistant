@@ -1,4 +1,5 @@
-﻿using System;
+﻿using queueable_scoreboard_assistant.Common;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,14 +23,40 @@ namespace queueable_scoreboard_assistant
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private const string DfaStoreFilename = "names.dfa";
+
+        private LanguageDfa languageDfa;
+
         public MainPage()
         {
             this.InitializeComponent();
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
 
+            // Run only once
+            if (languageDfa == null)
+            {
+                // Load the existing autocomplete language from the stored file
+                Windows.Storage.StorageFolder storageFolder =
+                    Windows.Storage.ApplicationData.Current.LocalFolder;
+
+                Windows.Storage.StorageFile dfaFile;
+                try
+                {
+                    dfaFile = await storageFolder.GetFileAsync(DfaStoreFilename);
+                } catch (FileNotFoundException)
+                {
+                    // Create the store if it does not exist
+                    dfaFile = await storageFolder.CreateFileAsync(DfaStoreFilename);
+                }
+
+                Stream stream = await dfaFile.OpenStreamForReadAsync();
+                languageDfa = new LanguageDfa();
+                languageDfa.ReadPrefixStates(stream);
+            }
         }
 
         private void Button_Click_LeftDecrement(object sender, RoutedEventArgs e)
@@ -76,6 +103,14 @@ namespace queueable_scoreboard_assistant
             catch
             {
                 RightScore.Text = "NaN";
+            }
+        }
+
+        private void AutoSuggestBox_TextChanged_Player(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                
             }
         }
     }

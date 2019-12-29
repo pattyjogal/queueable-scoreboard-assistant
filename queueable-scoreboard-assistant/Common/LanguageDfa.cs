@@ -93,7 +93,7 @@ namespace queueable_scoreboard_assistant.Common
         {
             StreamReader streamReader = new StreamReader(stream);
 
-            if (!streamReader.ReadLine().Equals(FileHeader))
+            if (!streamReader.EndOfStream && !streamReader.ReadLine().Equals(FileHeader))
             {
                 throw new InvalidFileFormatException();
             }
