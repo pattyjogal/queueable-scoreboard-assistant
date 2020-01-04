@@ -114,7 +114,7 @@ namespace queueable_scoreboard_assistant
                 sender.ItemsSource = matches.ToList();
             }
         }
-
+        
         private async void AutoSuggestBox_QuerySubmitted_Player(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null)
@@ -133,5 +133,11 @@ namespace queueable_scoreboard_assistant
             }
         }
 
+        private void NavigationView_Loaded(object sender, RoutedEventArgs e)
+        {
+            NavigationView navView = (NavigationView)sender;
+            navView.IsPaneOpen = false;
+            navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+        }
     }
 }

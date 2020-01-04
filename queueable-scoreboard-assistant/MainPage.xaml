@@ -5,14 +5,38 @@
     xmlns:local="using:queueable_scoreboard_assistant"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Windows.UI.Xaml.Media"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <media:AcrylicBrush x:Key="HostBackdropBrush"
+                            BackgroundSource="HostBackdrop"
+                            TintColor="White"
+                            TintOpacity="0.6"
+                            FallbackColor="LightGray"
+                             />
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="7*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="1">
+        <NavigationView Loaded="NavigationView_Loaded" CompactModeThresholdWidth="280" ExpandedModeThresholdWidth="2000">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Tag="add" Icon="Add" Content="Schedule New Match"/>
+            </NavigationView.MenuItems>
+        </NavigationView>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"></ColumnDefinition>
+                <ColumnDefinition Width="8*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <ListView Grid.Column="0"></ListView>
+            <Frame Grid.Column="1" Padding="30">
+                <TextBlock FontSize="36">Schedule New Match</TextBlock>
+            </Frame>
+        </Grid>
+        <Grid Grid.Row="1" Background="{StaticResource HostBackdropBrush}" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"></ColumnDefinition>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
@@ -24,11 +48,11 @@
                  FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" />
             <TextBox Name="RightScore" Grid.Column="3" Text="0" TextWrapping="Wrap" Height="100" Width="100"
             FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" />
-            <Button Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftDecrement"/>
-            <Button Background="#00000000" Content="&#xE70E;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftIncrement"/>
-            <Button Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0"></Button>
-            <Button Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
-            <Button Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
+            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftDecrement"/>
+            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftIncrement"/>
+            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0"></Button>
+            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
+            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
             <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
             <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
         </Grid>
