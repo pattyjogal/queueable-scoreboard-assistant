@@ -121,6 +121,7 @@
     </Compile>
     <Compile Include="Common\LanguageDfa.cs" />
     <Compile Include="Common\PrefixState.cs" />
+    <Compile Include="Common\ScheduledMatch.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

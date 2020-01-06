@@ -1,6 +1,7 @@
 ﻿using queueable_scoreboard_assistant.Common;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -30,9 +31,13 @@ namespace queueable_scoreboard_assistant
 
         private LanguageDfa languageDfa;
 
+        private readonly ObservableCollection<ScheduledMatch> scheduledGames = new ObservableCollection<ScheduledMatch>();
+
         public MainPage()
         {
             this.InitializeComponent();
+
+            ScheduledMatchesListView.ItemsSource = scheduledGames;
         }
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)
