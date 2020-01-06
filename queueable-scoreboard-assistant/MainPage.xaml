@@ -53,8 +53,13 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <Frame Grid.Column="1" Padding="30">
-                        <TextBlock FontSize="36">Schedule New Match</TextBlock>
+                    <Frame Grid.Column="1" Padding="24,0,0,0">
+                        <StackPanel HorizontalAlignment="Left">
+                            <TextBlock FontSize="24">Schedule New Match</TextBlock>
+                            <AutoSuggestBox Name="CreatePlayerOneAutoSuggestBox" MinWidth="300" Header="Player 1" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
+                            <AutoSuggestBox Name="CreatePlayerTwoAutoSuggestBox" MaxWidth="300" Header="Player 2" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
+                            <TextBox x:Name="CreateMatchNameTextBox" Header="Match Name"/>
+                        </StackPanel>
                     </Frame>
                 </Grid>
                 <Grid Grid.Row="1" Background="{StaticResource HostBackdropBrush}" >
