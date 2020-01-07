@@ -17,9 +17,9 @@
                              />
     </Page.Resources>
     <Grid>
-        <NavigationView Loaded="NavigationView_Loaded" CompactModeThresholdWidth="280" ExpandedModeThresholdWidth="2000">
+        <NavigationView Loaded="NavigationView_Loaded" CompactModeThresholdWidth="280" ExpandedModeThresholdWidth="2000" SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem Tag="add_match" Icon="Add" Content="Schedule New Match"/>
+                <NavigationViewItem Tag="Schedule Match" Icon="Add" Content="Schedule New Match"/>
             </NavigationView.MenuItems>
             <Grid Margin="0 24 0 0">
                 <Grid.RowDefinitions>
@@ -53,14 +53,12 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <Frame Grid.Column="1" Padding="24,0,0,0">
-                        <StackPanel HorizontalAlignment="Left" Spacing="10">
-                            <TextBlock FontSize="24">Schedule New Match</TextBlock>
-                            <AutoSuggestBox Name="CreatePlayerOneAutoSuggestBox" MinWidth="300" Header="Player 1" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
-                            <AutoSuggestBox Name="CreatePlayerTwoAutoSuggestBox" MaxWidth="300" Header="Player 2" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
-                            <TextBox x:Name="CreateMatchNameTextBox" Header="Match Name"/>
-                            <Button Name="CreateMatchSubmitButton" Content="Submit" Click="CreateMatchSubmitButton_Click"/>
-                        </StackPanel>
+                    <Frame Name="ContentFrame">
+                        <Frame.ContentTransitions>
+                            <TransitionCollection>
+                                <NavigationThemeTransition/>
+                            </TransitionCollection>
+                        </Frame.ContentTransitions>
                     </Frame>
                 </Grid>
                 <Grid Grid.Row="1" Background="{StaticResource HostBackdropBrush}" >
@@ -80,8 +78,8 @@
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0"></Button>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
-                    <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
-                    <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="AutoSuggestBox_TextChanged_Player" QuerySubmitted="AutoSuggestBox_QuerySubmitted_Player"/>
+                    <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
+                    <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
                 </Grid>
             </Grid>
 
