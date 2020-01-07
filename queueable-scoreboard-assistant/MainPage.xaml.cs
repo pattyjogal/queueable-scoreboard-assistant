@@ -31,13 +31,13 @@ namespace queueable_scoreboard_assistant
 
         private LanguageDfa languageDfa;
 
-        private readonly ObservableCollection<ScheduledMatch> scheduledGames = new ObservableCollection<ScheduledMatch>();
+        private readonly ObservableCollection<ScheduledMatch> scheduledMatches = new ObservableCollection<ScheduledMatch>();
 
         public MainPage()
         {
             this.InitializeComponent();
 
-            ScheduledMatchesListView.ItemsSource = scheduledGames;
+            ScheduledMatchesListView.ItemsSource = scheduledMatches;
         }
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)
@@ -143,6 +143,20 @@ namespace queueable_scoreboard_assistant
             NavigationView navView = (NavigationView)sender;
             navView.IsPaneOpen = false;
             navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+        }
+
+        /// <summary>
+        /// Handles submitting the created match
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateMatchSubmitButton_Click(object sender, RoutedEventArgs e)
+        {
+            string firstPlayerName = CreatePlayerOneAutoSuggestBox.Text;
+            string secondPlayerName = CreatePlayerTwoAutoSuggestBox.Text;
+            string matchName = CreateMatchNameTextBox.Text;
+
+            scheduledMatches.Add(new ScheduledMatch(firstPlayerName, secondPlayerName, matchName));
         }
     }
 }
