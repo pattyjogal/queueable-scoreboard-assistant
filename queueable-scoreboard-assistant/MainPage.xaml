@@ -53,7 +53,7 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <Frame Name="ContentFrame">
+                    <Frame Grid.Column="1" Name="ContentFrame">
                         <Frame.ContentTransitions>
                             <TransitionCollection>
                                 <NavigationThemeTransition/>
