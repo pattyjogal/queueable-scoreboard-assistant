@@ -1,6 +1,7 @@
 ﻿using queueable_scoreboard_assistant.Common;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -23,40 +24,13 @@ namespace queueable_scoreboard_assistant
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private const string DfaStoreFilename = "names.dfa";
-        private readonly Windows.Storage.StorageFolder storageFolder =
-            Windows.Storage.ApplicationData.Current.LocalFolder;
-
-
-        private LanguageDfa languageDfa;
+        private readonly DfaAutocomplete playerNamesAutocomplete = App.playerNamesAutocomplete;
 
         public MainPage()
         {
             this.InitializeComponent();
-        }
 
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-
-            // Run only once
-            if (languageDfa == null)
-            {
-                // Load the existing autocomplete language from the stored file
-                Windows.Storage.StorageFile dfaFile;
-                try
-                {
-                    dfaFile = await storageFolder.GetFileAsync(DfaStoreFilename);
-                } catch (FileNotFoundException)
-                {
-                    // Create the store if it does not exist
-                    dfaFile = await storageFolder.CreateFileAsync(DfaStoreFilename);
-                }
-
-                Stream stream = await dfaFile.OpenStreamForReadAsync();
-                languageDfa = new LanguageDfa();
-                languageDfa.ReadPrefixStates(stream);
-            }
+            ScheduledMatchesListView.ItemsSource = App.scheduledMatches;
         }
 
         private void Button_Click_LeftDecrement(object sender, RoutedEventArgs e)
@@ -106,32 +80,24 @@ namespace queueable_scoreboard_assistant
             }
         }
 
-        private void AutoSuggestBox_TextChanged_Player(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+
+        private void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                string[] matches = languageDfa.ListPossibleStrings(sender.Text);
-                sender.ItemsSource = matches.ToList();
-            }
+            NavigationView navView = (NavigationView)sender;
+            navView.IsPaneOpen = false;
+            navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
         }
 
-        private async void AutoSuggestBox_QuerySubmitted_Player(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args.ChosenSuggestion != null)
-            {
-                // User selected an item from the suggestion list, take an action on it here.
-            }
-            else
-            {
-                // The user wants to commit a new player name
-                languageDfa.AddNewString(args.QueryText);
 
-                // TODO: Intoduce an option to save to file on each new name vs. saving when the program closes
-                Windows.Storage.StorageFile dfaFile = await storageFolder.GetFileAsync(DfaStoreFilename);
-                using (Stream stream = await dfaFile.OpenStreamForWriteAsync())
-                    languageDfa.WritePrefixStates(stream);
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            switch (((NavigationViewItem)args.SelectedItem).Tag.ToString())
+            {
+                case "Schedule Match":
+                    ContentFrame.Navigate(typeof(ScheduleMatchPage));
+                    break;
+                
             }
         }
-
     }
 }
