@@ -32,27 +32,43 @@
                         <ColumnDefinition Width="6*"></ColumnDefinition>
                         <ColumnDefinition Width="6*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <ListView Name="ScheduledMatchesListView" Grid.Column="0" AllowDrop="True" CanDragItems="True" CanReorderItems="True">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock 
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <ListView Name="ScheduledMatchesListView" AllowDrop="True" CanDragItems="True" CanReorderItems="True">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock 
                            Margin="20,0,20,8"
                            FontSize="24" 
                            FontWeight="SemiBold">
                                         <Run Text="{Binding FirstPlayer}"></Run>
                                         <Run> vs. </Run>
                                         <Run Text="{Binding SecondPlayer}"></Run>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding MatchName}" 
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding MatchName}" 
                            Margin="20,0,20,8"
                            FontSize="16"
                            Foreground="DarkGray" 
                            Opacity="0.8" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePop"/>
+                            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_Requeue"/>
+                        </Grid>
+                    </Grid>
                     <Frame Grid.Column="1" Name="ContentFrame">
                         <Frame.ContentTransitions>
                             <TransitionCollection>
@@ -78,8 +94,8 @@
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0"></Button>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
-                    <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
-                    <AutoSuggestBox HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
+                    <AutoSuggestBox Name="ActiveMatchPlayerOneAutocomplete" HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
+                    <AutoSuggestBox Name="ActiveMatchPlayerTwoAutocomplete" HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
                 </Grid>
             </Grid>
 

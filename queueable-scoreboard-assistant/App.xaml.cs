@@ -26,6 +26,7 @@ namespace queueable_scoreboard_assistant
     {
         public static readonly ObservableCollection<ScheduledMatch> scheduledMatches = new ObservableCollection<ScheduledMatch>();
         public static readonly DfaAutocomplete playerNamesAutocomplete = new DfaAutocomplete();
+        public static ScheduledMatch activeMatch;
 
 
         /// <summary>

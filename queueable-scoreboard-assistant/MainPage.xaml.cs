@@ -25,6 +25,7 @@ namespace queueable_scoreboard_assistant
     public sealed partial class MainPage : Page
     {
         private readonly DfaAutocomplete playerNamesAutocomplete = App.playerNamesAutocomplete;
+        private bool isScoreboardPopulated = false;
 
         public MainPage()
         {
@@ -97,6 +98,39 @@ namespace queueable_scoreboard_assistant
                     ContentFrame.Navigate(typeof(ScheduleMatchPage));
                     break;
                 
+            }
+        }
+
+        private void Button_Click_QueuePop(object sender, RoutedEventArgs e)
+        {
+            if (App.scheduledMatches.Count > 0)
+            {
+                App.activeMatch = App.scheduledMatches.First();
+                App.scheduledMatches.RemoveAt(0); 
+
+                ActiveMatchPlayerOneAutocomplete.Text = App.activeMatch.FirstPlayer;
+                ActiveMatchPlayerTwoAutocomplete.Text = App.activeMatch.SecondPlayer;
+
+                // Now that something has been dequeued, we alow requeuing.
+                isScoreboardPopulated = true;
+            }
+        }
+
+        private void Button_Click_Requeue(object sender, RoutedEventArgs e)
+        {
+            if (isScoreboardPopulated)
+            {
+                ScheduledMatch nextMatch = new ScheduledMatch(
+                    ActiveMatchPlayerOneAutocomplete.Text,
+                    ActiveMatchPlayerTwoAutocomplete.Text,
+                    App.activeMatch.MatchName
+                    );
+
+                App.scheduledMatches.Insert(0, nextMatch);
+                App.activeMatch = null;
+
+                ActiveMatchPlayerOneAutocomplete.Text = "";
+                ActiveMatchPlayerTwoAutocomplete.Text = "";
             }
         }
     }
