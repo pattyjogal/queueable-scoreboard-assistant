@@ -25,13 +25,33 @@ namespace queueable_scoreboard_assistant
     public sealed partial class MainPage : Page
     {
         private readonly DfaAutocomplete playerNamesAutocomplete = App.playerNamesAutocomplete;
-        private bool isScoreboardPopulated = false;
+        private bool _isScoreboardPopulated = false;
+        public bool IsScoreboardPopulated
+        { 
+            get
+            {
+                return _isScoreboardPopulated;
+            }
+
+            set
+            {
+                _isScoreboardPopulated = value;
+                RequeueButton.IsEnabled = value;
+            }
+        }
 
         public MainPage()
         {
             this.InitializeComponent();
-
+            IsScoreboardPopulated = false;
             ScheduledMatchesListView.ItemsSource = App.scheduledMatches;
+
+            App.scheduledMatches.CollectionChanged += ScheduledMatches_CollectionChanged;
+        }
+
+        private void ScheduledMatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            QueuePullButton.IsEnabled = App.scheduledMatches.Count > 0;
         }
 
         private void Button_Click_LeftDecrement(object sender, RoutedEventArgs e)
@@ -111,14 +131,14 @@ namespace queueable_scoreboard_assistant
                 ActiveMatchPlayerOneAutocomplete.Text = App.activeMatch.FirstPlayer;
                 ActiveMatchPlayerTwoAutocomplete.Text = App.activeMatch.SecondPlayer;
 
-                // Now that something has been dequeued, we alow requeuing.
-                isScoreboardPopulated = true;
+                // Now that something has been dequeued, we alow requeuing
+                IsScoreboardPopulated = true;
             }
         }
 
         private void Button_Click_Requeue(object sender, RoutedEventArgs e)
         {
-            if (isScoreboardPopulated)
+            if (IsScoreboardPopulated)
             {
                 ScheduledMatch nextMatch = new ScheduledMatch(
                     ActiveMatchPlayerOneAutocomplete.Text,
@@ -131,6 +151,9 @@ namespace queueable_scoreboard_assistant
 
                 ActiveMatchPlayerOneAutocomplete.Text = "";
                 ActiveMatchPlayerTwoAutocomplete.Text = "";
+
+                // Once a match has been dequeued, the scoreboard is blank
+                IsScoreboardPopulated = false;
             }
         }
     }

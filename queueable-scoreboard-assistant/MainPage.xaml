@@ -65,8 +65,8 @@
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePop"/>
-                            <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_Requeue"/>
+                            <Button Name="QueuePullButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePop"/>
+                            <Button Name="RequeueButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_Requeue"/>
                         </Grid>
                     </Grid>
                     <Frame Grid.Column="1" Name="ContentFrame">
