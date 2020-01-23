@@ -14,7 +14,10 @@
             <AutoSuggestBox Name="CreatePlayerOneAutoSuggestBox" MinWidth="300" Header="Player 1" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
             <AutoSuggestBox Name="CreatePlayerTwoAutoSuggestBox" MaxWidth="300" Header="Player 2" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
             <TextBox x:Name="CreateMatchNameTextBox" Header="Match Name"/>
-            <Button Name="CreateMatchSubmitButton" Content="Submit" Click="CreateMatchSubmitButton_Click"/>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <Button Name="CreateMatchSubmitButton" Content="Submit" Click="CreateMatchSubmitButton_Click" />
+                <Button Name="CreateMatchCancelButton" Content="Cancel" Click="CreateMatchCancelButton_Click" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

@@ -47,6 +47,7 @@ namespace queueable_scoreboard_assistant
             ScheduledMatchesListView.ItemsSource = App.scheduledMatches;
 
             App.scheduledMatches.CollectionChanged += ScheduledMatches_CollectionChanged;
+            App.mainContentFrame = ContentFrame;
         }
 
         private void ScheduledMatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -105,6 +106,7 @@ namespace queueable_scoreboard_assistant
         private void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             NavigationView navView = (NavigationView)sender;
+            App.nagivationView = navView;
             navView.IsPaneOpen = false;
             navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
         }
@@ -112,12 +114,15 @@ namespace queueable_scoreboard_assistant
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            switch (((NavigationViewItem)args.SelectedItem).Tag.ToString())
+            if (args.SelectedItem != null)
             {
-                case "Schedule Match":
-                    ContentFrame.Navigate(typeof(ScheduleMatchPage));
-                    break;
-                
+                switch (((NavigationViewItem)args.SelectedItem).Tag.ToString())
+                {
+                    case "Schedule Match":
+                        ContentFrame.Navigate(typeof(ScheduleMatchPage));
+                        break;
+
+                }
             }
         }
 

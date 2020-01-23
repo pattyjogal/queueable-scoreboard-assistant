@@ -37,6 +37,17 @@ namespace queueable_scoreboard_assistant
             string matchName = CreateMatchNameTextBox.Text;
 
             App.scheduledMatches.Add(new ScheduledMatch(firstPlayerName, secondPlayerName, matchName));
+
+            // Close the panel
+            App.mainContentFrame.Content = null;
+            App.nagivationView.SelectedItem = null;
+        }
+
+        private void CreateMatchCancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Close the panel
+            App.mainContentFrame.Content = null;
+            App.nagivationView.SelectedItem = null;
         }
     }
 }
