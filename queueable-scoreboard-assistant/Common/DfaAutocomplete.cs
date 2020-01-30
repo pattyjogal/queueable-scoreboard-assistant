@@ -37,6 +37,8 @@ namespace queueable_scoreboard_assistant.Common
 
         public void TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
+            sender.QueryIcon = new SymbolIcon(Symbol.Accept);
+
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 string[] matches = languageDfa.ListPossibleStrings(sender.Text);
@@ -46,6 +48,8 @@ namespace queueable_scoreboard_assistant.Common
 
         public async void QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            sender.QueryIcon = null;
+
             if (args.ChosenSuggestion != null)
             {
                 // User selected an item from the suggestion list, take an action on it here.
