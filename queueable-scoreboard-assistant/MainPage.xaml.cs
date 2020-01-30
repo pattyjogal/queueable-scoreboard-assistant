@@ -280,5 +280,21 @@ namespace queueable_scoreboard_assistant
                 ContentDialogResult result = await alert.ShowAsync();
             }
         }
+
+        private async void SwitchButton_ClickAsync(object sender, RoutedEventArgs e)
+        {
+            string temp = ActiveMatchPlayerOneAutocomplete.Text;
+            ActiveMatchPlayerOneAutocomplete.Text = ActiveMatchPlayerTwoAutocomplete.Text;
+            ActiveMatchPlayerTwoAutocomplete.Text = temp;
+
+            temp = LeftScore.Text;
+            LeftScore.Text = RightScore.Text;
+            RightScore.Text = temp;
+
+            await UpdateStreamFileAsync("p1_name.txt", ActiveMatchPlayerOneAutocomplete.Text);
+            await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
+            await UpdateStreamFileAsync("p1_score.txt", LeftScore.Text);
+            await UpdateStreamFileAsync("p2_score.txt", RightScore.Text);
+        }
     }
 }
