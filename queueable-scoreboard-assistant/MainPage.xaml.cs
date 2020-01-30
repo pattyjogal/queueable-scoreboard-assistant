@@ -147,6 +147,7 @@ namespace queueable_scoreboard_assistant
                     await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
                     await UpdateStreamFileAsync("p1_score.txt", "0");
                     await UpdateStreamFileAsync("p2_score.txt", "0");
+                    await UpdateStreamFileAsync("match_name.txt", App.activeMatch.MatchName);
                     ActiveMatchPlayerOneAutocomplete.QueryIcon = null;
                     ActiveMatchPlayerTwoAutocomplete.QueryIcon = null;
                 }
@@ -195,6 +196,8 @@ namespace queueable_scoreboard_assistant
                     await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
                     await UpdateStreamFileAsync("p1_score.txt", "0");
                     await UpdateStreamFileAsync("p2_score.txt", "0");
+                    await UpdateStreamFileAsync("match_name.txt", "");
+
                 }
                 catch (Exception ex)
                 {
