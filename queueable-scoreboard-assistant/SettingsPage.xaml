@@ -1,0 +1,18 @@
+﻿<Page
+    x:Class="queueable_scoreboard_assistant.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:queueable_scoreboard_assistant"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Orientation="Vertical">
+        <TextBlock>Output Folder</TextBlock>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBox Name="OutputFolderTextBox" MinWidth="300" />
+            <Button Content="Choose Folder" Click="Button_ClickAsync" />
+        </StackPanel>
+    </StackPanel>
+</Page>
