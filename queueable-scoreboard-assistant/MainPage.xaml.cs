@@ -48,6 +48,8 @@ namespace queueable_scoreboard_assistant
 
             App.scheduledMatches.CollectionChanged += ScheduledMatches_CollectionChanged;
             App.mainContentFrame = ContentFrame;
+            UpdateStreamFileAsync("p1_score.txt", "0");
+            UpdateStreamFileAsync("p2_score.txt", "0");
         }
 
         private void ScheduledMatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -125,7 +127,7 @@ namespace queueable_scoreboard_assistant
             }
         }
 
-        private void Button_Click_QueuePop(object sender, RoutedEventArgs e)
+        private async void Button_Click_QueuePopAsync(object sender, RoutedEventArgs e)
         {
             if (App.scheduledMatches.Count > 0)
             {
@@ -137,10 +139,37 @@ namespace queueable_scoreboard_assistant
 
                 // Now that something has been dequeued, we alow requeuing
                 IsScoreboardPopulated = true;
+
+                // Write the new names out to file
+                try
+                {
+                    await UpdateStreamFileAsync("p1_name.txt", ActiveMatchPlayerOneAutocomplete.Text);
+                    await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
+                    await UpdateStreamFileAsync("p1_score.txt", "0");
+                    await UpdateStreamFileAsync("p2_score.txt", "0");
+                    ActiveMatchPlayerOneAutocomplete.QueryIcon = null;
+                    ActiveMatchPlayerTwoAutocomplete.QueryIcon = null;
+                }
+                catch (Exception ex)
+                {
+                    if (ex.HResult != 0x80070497)
+                    {
+                        throw ex;
+                    }
+
+                    ContentDialog alert = new ContentDialog
+                    {
+                        Title = "Could not save",
+                        Content = "One of the files was in use. Please try again.",
+                        CloseButtonText = "Ok"
+                    };
+
+                    ContentDialogResult result = await alert.ShowAsync();
+                }
             }
         }
 
-        private void Button_Click_Requeue(object sender, RoutedEventArgs e)
+        private async void Button_Click_RequeueAsync(object sender, RoutedEventArgs e)
         {
             if (IsScoreboardPopulated)
             {
@@ -158,6 +187,32 @@ namespace queueable_scoreboard_assistant
 
                 // Once a match has been dequeued, the scoreboard is blank
                 IsScoreboardPopulated = false;
+
+                // Clear the names in the files
+                try
+                {
+                    await UpdateStreamFileAsync("p1_name.txt", ActiveMatchPlayerOneAutocomplete.Text);
+                    await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
+                    await UpdateStreamFileAsync("p1_score.txt", "0");
+                    await UpdateStreamFileAsync("p2_score.txt", "0");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.HResult != 0x80070497)
+                    {
+                        throw ex;
+                    }
+
+                    ContentDialog alert = new ContentDialog
+                    {
+                        Title = "Could not save",
+                        Content = "One of the files was in use. Please try again.",
+                        CloseButtonText = "Ok"
+                    };
+
+                    ContentDialogResult result = await alert.ShowAsync();
+                }
+
             }
         }
 
@@ -171,6 +226,55 @@ namespace queueable_scoreboard_assistant
             {
                 var item = sender.MenuItems.OfType<NavigationViewItem>().First(x => (string)x.Content == (string)args.InvokedItem);
                 NavigationView_Navigate(item as NavigationViewItem);
+            }
+        }
+
+        private async void LeftScore_TextChangedAsync(object sender, TextChangedEventArgs e)
+        {
+            await UpdateStreamFileAsync("p1_score.txt", (sender as TextBox).Text);
+        }
+
+        private async void RightScore_TextChangedAsync(object sender, TextChangedEventArgs e)
+        {
+            await UpdateStreamFileAsync("p2_score.txt", (sender as TextBox).Text);
+
+        }
+
+        private async void ActiveMatchPlayerOneAutocomplete_QuerySubmittedAsync(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            playerNamesAutocomplete.QuerySubmitted(sender, args);
+            await UpdateStreamFileAsync("p1_name.txt", sender.Text);
+
+        }
+
+        private async void ActiveMatchPlayerTwoAutocomplete_QuerySubmittedAsync(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            playerNamesAutocomplete.QuerySubmitted(sender, args);
+            await UpdateStreamFileAsync("p2_name.txt", sender.Text);
+
+        }
+
+        private async System.Threading.Tasks.Task UpdateStreamFileAsync(string filename, string value)
+        {
+            object outputFolder;
+            if (App.localSettings.Values.TryGetValue("output_folder", out outputFolder))
+            {
+                Windows.Storage.StorageFolder storageFolder = 
+                    await Windows.Storage.StorageFolder.GetFolderFromPathAsync(outputFolder as string);
+                Windows.Storage.StorageFile outFile =
+                    await storageFolder.CreateFileAsync(filename, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                await Windows.Storage.FileIO.WriteTextAsync(outFile, value);
+            } 
+            else
+            {
+                ContentDialog alert = new ContentDialog
+                {
+                    Title = "Could not save",
+                    Content = "You must set an output directory to write files for streaming software.",
+                    CloseButtonText = "Ok"
+                };
+
+                ContentDialogResult result = await alert.ShowAsync();
             }
         }
     }

@@ -65,8 +65,8 @@
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Name="QueuePullButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePop"/>
-                            <Button Name="RequeueButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_Requeue"/>
+                            <Button Name="QueuePullButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePopAsync"/>
+                            <Button Name="RequeueButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_RequeueAsync"/>
                         </Grid>
                     </Grid>
                     <Frame Grid.Column="1" Name="ContentFrame">
@@ -86,16 +86,16 @@
                         <ColumnDefinition Width="3*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <TextBox Name="LeftScore" Grid.Column="1" Text="0" TextWrapping="Wrap" Height="100" Width="100"
-                 FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" />
+                 FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" TextChanged="LeftScore_TextChangedAsync" />
                     <TextBox Name="RightScore" Grid.Column="3" Text="0" TextWrapping="Wrap" Height="100" Width="100"
-            FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" />
+            FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" TextChanged="RightScore_TextChangedAsync" />
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftDecrement"/>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftIncrement"/>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0"></Button>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
                     <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
-                    <AutoSuggestBox Name="ActiveMatchPlayerOneAutocomplete" HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
-                    <AutoSuggestBox Name="ActiveMatchPlayerTwoAutocomplete" HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
+                    <AutoSuggestBox Name="ActiveMatchPlayerOneAutocomplete" HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="ActiveMatchPlayerOneAutocomplete_QuerySubmittedAsync"/>
+                    <AutoSuggestBox Name="ActiveMatchPlayerTwoAutocomplete" HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="ActiveMatchPlayerTwoAutocomplete_QuerySubmittedAsync"/>
                 </Grid>
             </Grid>
 

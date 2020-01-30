@@ -25,11 +25,12 @@ namespace queueable_scoreboard_assistant
         public SettingsPage()
         {
             this.InitializeComponent();
-            object outputPath;
+            object outputPath = "";
 
             if (App.localSettings.Values.TryGetValue("output_folder", out outputPath))
             {
                 OutputFolderTextBox.Text = outputPath as string;
+
             }
         }
 
