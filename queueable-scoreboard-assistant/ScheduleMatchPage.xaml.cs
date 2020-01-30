@@ -1,0 +1,53 @@
+﻿using queueable_scoreboard_assistant.Common;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
+
+// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
+
+namespace queueable_scoreboard_assistant
+{
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class ScheduleMatchPage : Page
+    {
+        private readonly DfaAutocomplete playerNamesAutocomplete = App.playerNamesAutocomplete;
+
+        public ScheduleMatchPage()
+        {
+            this.InitializeComponent();
+        }
+
+        private void CreateMatchSubmitButton_Click(object sender, RoutedEventArgs e)
+        {
+            string firstPlayerName = CreatePlayerOneAutoSuggestBox.Text;
+            string secondPlayerName = CreatePlayerTwoAutoSuggestBox.Text;
+            string matchName = CreateMatchNameTextBox.Text;
+
+            App.scheduledMatches.Add(new ScheduledMatch(firstPlayerName, secondPlayerName, matchName));
+
+            // Close the panel
+            App.mainContentFrame.Content = null;
+            App.nagivationView.SelectedItem = null;
+        }
+
+        private void CreateMatchCancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Close the panel
+            App.mainContentFrame.Content = null;
+            App.nagivationView.SelectedItem = null;
+        }
+    }
+}

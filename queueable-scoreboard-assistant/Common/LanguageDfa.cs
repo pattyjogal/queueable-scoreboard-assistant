@@ -93,7 +93,7 @@ namespace queueable_scoreboard_assistant.Common
         {
             StreamReader streamReader = new StreamReader(stream);
 
-            if (!streamReader.ReadLine().Equals(FileHeader))
+            if (!streamReader.EndOfStream && !streamReader.ReadLine().Equals(FileHeader))
             {
                 throw new InvalidFileFormatException();
             }
@@ -107,16 +107,28 @@ namespace queueable_scoreboard_assistant.Common
 
         /// <summary>
         /// Lists all of the possible strings in the language starting from the prefix.
+        /// 
         /// </summary>
         /// <param name="prefix">the starting point for the traversal</param>
-        /// <returns></returns>
+        /// <returns>A list of all the possible strings with the given prefix. Empty if no match or empty language.</returns>
         public string[] ListPossibleStrings(string prefix)
         {
+            if (_prefixStates.Count == 0)
+            {
+                return new string[0];
+            }
+
             List<string> strings = new List<string>();
             Stack<(int, string)> statePath = new Stack<(int, string)>();
 
             // Traverse to the state after reading the prefix
             var (startStateIndex, _) = FindPrefixState(prefix);
+
+            // If we can't find the start state, then there are no possible strings
+            if (startStateIndex == -1)
+            {
+                return new string[0];
+            }
 
             statePath.Push((startStateIndex, prefix));
 
@@ -189,6 +201,10 @@ namespace queueable_scoreboard_assistant.Common
         public bool Contains(string word)
         {
             var (_, state) = FindPrefixState(word);
+            if (state == null)
+            {
+                return false;
+            }
             return state.isAccepting;
         }
 
@@ -203,7 +219,8 @@ namespace queueable_scoreboard_assistant.Common
                 prefix = prefix.Remove(0, 1);
             }
 
-            return (stateIndex, state);
+            // If any of the prefix string is left, then this state doesn't exist
+            return prefix.Length == 0 ? (stateIndex, state) : (-1, null);
         }
     }
 }

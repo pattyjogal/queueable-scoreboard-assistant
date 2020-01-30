@@ -125,6 +125,14 @@ namespace queueable_scoreboard_assistant_test
         }
 
         [TestMethod]
+        public void ListEmptyLanguage()
+        {
+            LanguageDfa dfa = new LanguageDfa();
+
+            Assert.IsTrue(dfa.ListPossibleStrings("test").Length == 0);
+        }
+
+        [TestMethod]
         public async Task AutocompleteLongListStringsTestAsync()
         {
             LanguageDfa dfa = new LanguageDfa();

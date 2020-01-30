@@ -1,5 +1,7 @@
-﻿using System;
+﻿using queueable_scoreboard_assistant.Common;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,6 +24,13 @@ namespace queueable_scoreboard_assistant
     /// </summary>
     sealed partial class App : Application
     {
+        public static readonly ObservableCollection<ScheduledMatch> scheduledMatches = new ObservableCollection<ScheduledMatch>();
+        public static readonly DfaAutocomplete playerNamesAutocomplete = new DfaAutocomplete();
+        public static Frame mainContentFrame;
+        public static ScheduledMatch activeMatch;
+        public static NavigationView nagivationView;
+
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -71,6 +80,9 @@ namespace queueable_scoreboard_assistant
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+
+            // Initialize the autocomplete(s)
+            playerNamesAutocomplete.Init();
         }
 
         /// <summary>

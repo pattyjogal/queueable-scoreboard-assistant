@@ -1,0 +1,23 @@
+﻿<Page
+    x:Class="queueable_scoreboard_assistant.ScheduleMatchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:queueable_scoreboard_assistant"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel HorizontalAlignment="Left" Spacing="10">
+            <TextBlock FontSize="24">Schedule New Match</TextBlock>
+            <AutoSuggestBox Name="CreatePlayerOneAutoSuggestBox" MinWidth="300" Header="Player 1" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
+            <AutoSuggestBox Name="CreatePlayerTwoAutoSuggestBox" MaxWidth="300" Header="Player 2" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="playerNamesAutocomplete.QuerySubmitted"/>
+            <TextBox x:Name="CreateMatchNameTextBox" Header="Match Name"/>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <Button Name="CreateMatchSubmitButton" Content="Submit" Click="CreateMatchSubmitButton_Click" />
+                <Button Name="CreateMatchCancelButton" Content="Cancel" Click="CreateMatchCancelButton_Click" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>
