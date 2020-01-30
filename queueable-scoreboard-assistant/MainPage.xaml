@@ -17,7 +17,7 @@
                              />
     </Page.Resources>
     <Grid>
-        <NavigationView Loaded="NavigationView_Loaded" CompactModeThresholdWidth="280" ExpandedModeThresholdWidth="2000" SelectionChanged="NavigationView_SelectionChanged">
+        <NavigationView Loaded="NavigationView_Loaded" CompactModeThresholdWidth="280" ExpandedModeThresholdWidth="2000" ItemInvoked="NavigationView_ItemInvoked">
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="Schedule Match" Icon="Add" Content="Schedule New Match"/>
             </NavigationView.MenuItems>

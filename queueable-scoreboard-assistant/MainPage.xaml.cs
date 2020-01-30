@@ -112,16 +112,15 @@ namespace queueable_scoreboard_assistant
         }
 
 
-        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private void NavigationView_Navigate(NavigationViewItem item)
         {
-            if (args.SelectedItem != null)
+            if (item != null)
             {
-                switch (((NavigationViewItem)args.SelectedItem).Tag.ToString())
+                switch (item.Tag.ToString())
                 {
                     case "Schedule Match":
                         ContentFrame.Navigate(typeof(ScheduleMatchPage));
                         break;
-
                 }
             }
         }
@@ -159,6 +158,19 @@ namespace queueable_scoreboard_assistant
 
                 // Once a match has been dequeued, the scoreboard is blank
                 IsScoreboardPopulated = false;
+            }
+        }
+
+        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            if (args.IsSettingsInvoked)
+            {
+                ContentFrame.Navigate(typeof(SettingsPage));
+            }
+            else
+            {
+                var item = sender.MenuItems.OfType<NavigationViewItem>().First(x => (string)x.Content == (string)args.InvokedItem);
+                NavigationView_Navigate(item as NavigationViewItem);
             }
         }
     }
