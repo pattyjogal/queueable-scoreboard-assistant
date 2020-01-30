@@ -25,6 +25,31 @@ namespace queueable_scoreboard_assistant
         public SettingsPage()
         {
             this.InitializeComponent();
+            object outputPath;
+
+            if (App.localSettings.Values.TryGetValue("output_folder", out outputPath))
+            {
+                OutputFolderTextBox.Text = outputPath as string;
+            }
+        }
+
+        private async void Button_ClickAsync(object sender, RoutedEventArgs e)
+        {
+            var folderPicker = new Windows.Storage.Pickers.FolderPicker();
+            folderPicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
+            folderPicker.FileTypeFilter.Add("*");
+
+            Windows.Storage.StorageFolder folder = await folderPicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                // Application now has read/write access to all contents in the picked folder
+                // (including other sub-folder contents)
+                Windows.Storage.AccessCache.StorageApplicationPermissions.
+                FutureAccessList.AddOrReplace("PickedFolderToken", folder);
+                OutputFolderTextBox.Text = folder.Path;
+                App.localSettings.Values["output_folder"] = folder.Path;
+            }
+            
         }
     }
 }

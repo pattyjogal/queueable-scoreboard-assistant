@@ -9,6 +9,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -29,6 +30,8 @@ namespace queueable_scoreboard_assistant
         public static Frame mainContentFrame;
         public static ScheduledMatch activeMatch;
         public static NavigationView nagivationView;
+        public static ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+
 
 
         /// <summary>

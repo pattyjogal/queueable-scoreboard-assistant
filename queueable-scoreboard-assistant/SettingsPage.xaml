@@ -11,8 +11,8 @@
     <StackPanel Orientation="Vertical">
         <TextBlock>Output Folder</TextBlock>
         <StackPanel Orientation="Horizontal" Spacing="10">
-            <TextBox MinWidth="300" />
-            <Button Content="Choose Folder" />
+            <TextBox Name="OutputFolderTextBox" MinWidth="300" />
+            <Button Content="Choose Folder" Click="Button_ClickAsync" />
         </StackPanel>
     </StackPanel>
 </Page>
