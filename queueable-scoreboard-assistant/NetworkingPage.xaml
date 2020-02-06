@@ -11,9 +11,19 @@
     <StackPanel Spacing="10">
         <StackPanel Orientation="Horizontal" Spacing="5">
             <TextBox Header="Server Address" MinWidth="300" />
-            <Button Name="ConnectButton" Content="Connect" VerticalAlignment="Bottom" />
+            <Button Name="ConnectButton" Content="Connect" VerticalAlignment="Bottom" Click="ConnectButton_Click" />
 
         </StackPanel>
-        <Button Name="HostButton" Content="Host"/>
+        <StackPanel Name="OkStatusPanel" Orientation="Horizontal" Spacing="5" Visibility="Collapsed">
+            <SymbolIcon Symbol="Accept"></SymbolIcon>
+            <TextBlock>Hosting on</TextBlock>
+            <TextBlock Name="IPAddrText"></TextBlock>
+        </StackPanel>
+        <StackPanel Name="BadStatusPanel" Orientation="Horizontal" Spacing="5" Visibility="Collapsed">
+            <SymbolIcon Symbol="Stop"></SymbolIcon>
+            <TextBlock>Could not start the server: </TextBlock>
+            <TextBlock Name="HostErrorMessage"></TextBlock>
+        </StackPanel>
+        <Button Name="HostButton" Content="Host" Click="HostButton_Click"/>
     </StackPanel>
 </Page>
