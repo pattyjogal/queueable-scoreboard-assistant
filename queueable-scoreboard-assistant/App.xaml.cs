@@ -32,6 +32,8 @@ namespace queueable_scoreboard_assistant
         public static NavigationView nagivationView;
         public static ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
+        public static string PortNumber = "8750";
+
 
 
         /// <summary>

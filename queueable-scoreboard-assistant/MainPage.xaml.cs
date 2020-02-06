@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -50,6 +51,7 @@ namespace queueable_scoreboard_assistant
             App.mainContentFrame = ContentFrame;
             UpdateStreamFileAsync("p1_score.txt", "0");
             UpdateStreamFileAsync("p2_score.txt", "0");
+
         }
 
         private void ScheduledMatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -105,7 +107,7 @@ namespace queueable_scoreboard_assistant
         }
 
 
-        private void NavigationView_Loaded(object sender, RoutedEventArgs e)
+        private async void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             NavigationView navView = (NavigationView)sender;
             App.nagivationView = navView;
@@ -122,6 +124,9 @@ namespace queueable_scoreboard_assistant
                 {
                     case "Schedule Match":
                         ContentFrame.Navigate(typeof(ScheduleMatchPage));
+                        break;
+                    case "Networking Settings":
+                        ContentFrame.Navigate(typeof(NetworkingPage));
                         break;
                 }
             }

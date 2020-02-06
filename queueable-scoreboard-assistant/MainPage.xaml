@@ -20,6 +20,8 @@
         <NavigationView Loaded="NavigationView_Loaded" CompactModeThresholdWidth="280" ExpandedModeThresholdWidth="2000" ItemInvoked="NavigationView_ItemInvoked">
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="Schedule Match" Icon="Add" Content="Schedule New Match"/>
+                <NavigationViewItem Tag="Networking Settings" Icon="Globe" Content="Networking Settings"/>
+
             </NavigationView.MenuItems>
             <Grid Margin="0 24 0 0">
                 <Grid.RowDefinitions>
