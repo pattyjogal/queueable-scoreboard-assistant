@@ -9,8 +9,22 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel Spacing="10">
+        <StackPanel Name="ConnectingClientStatusPanel" Orientation="Horizontal" Spacing="5" Visibility="Collapsed">
+            <SymbolIcon Symbol="Sync" />
+            <TextBlock>Connecting...</TextBlock>
+        </StackPanel>
+        <StackPanel Name="OkClientStatusPanel" Orientation="Horizontal" Spacing="5" Visibility="Collapsed">
+            <SymbolIcon Symbol="Accept" />
+            <TextBlock>Successfuly connected to </TextBlock>
+            <TextBlock Name="ConnectedIPAddrText"></TextBlock>
+        </StackPanel>
+        <StackPanel Name="BadClientStatusPanel" Orientation="Horizontal" Spacing="5" Visibility="Collapsed">
+            <SymbolIcon Symbol="Delete" />
+            <TextBlock>Error connecting: </TextBlock>
+            <TextBlock Name="ClientErrorMessage"></TextBlock>
+        </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBox Header="Server Address" MinWidth="300" />
+            <TextBox Name="ServerAddress" Header="Server Address" MinWidth="300" />
             <Button Name="ConnectButton" Content="Connect" VerticalAlignment="Bottom" Click="ConnectButton_Click" />
 
         </StackPanel>

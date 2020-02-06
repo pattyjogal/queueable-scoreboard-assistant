@@ -32,7 +32,7 @@ namespace queueable_scoreboard_assistant
 
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
-
+            StartClient(ServerAddress.Text);
         }
 
         private void HostButton_Click(object sender, RoutedEventArgs e)
@@ -72,9 +72,87 @@ namespace queueable_scoreboard_assistant
             }
         }
 
-        private void StreamSocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
+        private async void StreamSocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
-            throw new NotImplementedException();
+            string request;
+            using (var streamReader = new StreamReader(args.Socket.InputStream.AsStreamForRead()))
+            {
+                request = await streamReader.ReadLineAsync();
+            }
+
+            //await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => this.serverListBox.Items.Add(string.Format("server received the request: \"{0}\"", request)));
+
+            // Echo the request back as the response.
+            using (Stream outputStream = args.Socket.OutputStream.AsStreamForWrite())
+            {
+                using (var streamWriter = new StreamWriter(outputStream))
+                {
+                    await streamWriter.WriteLineAsync(request);
+                    await streamWriter.FlushAsync();
+                }
+            }
+
+            //await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => this.serverListBox.Items.Add(string.Format("server sent back the response: \"{0}\"", request)));
+
+            sender.Dispose();
+
+            //await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => this.serverListBox.Items.Add("server closed its socket"));
+        }
+
+        private async void StartClient(string address)
+        {
+            try
+            {
+                // Create the StreamSocket and establish a connection to the echo server.
+                using (var streamSocket = new Windows.Networking.Sockets.StreamSocket())
+                {
+                    // The server hostname that we will be establishing a connection to. In this example, the server and client are in the same process.
+                    var hostName = new HostName(address);
+
+                    ConnectingClientStatusPanel.Visibility = Visibility.Visible;
+                    await streamSocket.ConnectAsync(hostName, App.PortNumber);
+
+                    ConnectingClientStatusPanel.Visibility = Visibility.Collapsed;
+                    OkClientStatusPanel.Visibility = Visibility.Visible;
+
+                    // Send a request to the echo server.
+                    /*                   string request = "Hello, World!";
+                                       using (Stream outputStream = streamSocket.OutputStream.AsStreamForWrite())
+                                       {
+                                           using (var streamWriter = new StreamWriter(outputStream))
+                                           {
+                                               await streamWriter.WriteLineAsync(request);
+                                               await streamWriter.FlushAsync();
+                                           }
+                                       }
+
+                                       this.clientListBox.Items.Add(string.Format("client sent the request: \"{0}\"", request));
+
+                                       // Read data from the echo server.
+                                       string response;
+                                       using (Stream inputStream = streamSocket.InputStream.AsStreamForRead())
+                                       {
+                                           using (StreamReader streamReader = new StreamReader(inputStream))
+                                           {
+                                               response = await streamReader.ReadLineAsync();
+                                           }
+                                       }
+
+                                       this.clientListBox.Items.Add(string.Format("client received the response: \"{0}\" ", response));
+                                   }
+
+                                   this.clientListBox.Items.Add("client closed its socket");*/
+                }
+            }
+            catch (Exception ex)
+            {
+                ConnectingClientStatusPanel.Visibility = Visibility.Collapsed;
+                OkClientStatusPanel.Visibility = Visibility.Collapsed;
+                BadClientStatusPanel.Visibility = Visibility.Visible;
+    
+                SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
+                ClientErrorMessage.Text = webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message;
+            }
         }
     }
 }
