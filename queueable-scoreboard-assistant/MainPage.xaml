@@ -23,81 +23,90 @@
                 <NavigationViewItem Tag="Networking Settings" Icon="Globe" Content="Networking Settings"/>
 
             </NavigationView.MenuItems>
-            <Grid Margin="0 24 0 0">
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="7*"></RowDefinition>
                     <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
+                <Border Name="NetworkStatusBar" Grid.Row="0" Padding="5">
+                    <TextBlock Name="NetworkStatusText" HorizontalTextAlignment="Center" Foreground="White"></TextBlock>
+                </Border>
+                <Grid Margin="0 24 0 0" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="7*"></RowDefinition>
+                        <RowDefinition Height="auto"></RowDefinition>
+                    </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="6*"></ColumnDefinition>
-                        <ColumnDefinition Width="6*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="auto"/>
-                        </Grid.RowDefinitions>
-                        <ListView Name="ScheduledMatchesListView" AllowDrop="True" CanDragItems="True" CanReorderItems="True">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <TextBlock 
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="6*"></ColumnDefinition>
+                            <ColumnDefinition Width="6*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <ListView Name="ScheduledMatchesListView" AllowDrop="True" CanDragItems="True" CanReorderItems="True">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock 
                            Margin="20,0,20,8"
                            FontSize="24" 
                            FontWeight="SemiBold">
                                         <Run Text="{Binding FirstPlayer}"></Run>
                                         <Run> vs. </Run>
                                         <Run Text="{Binding SecondPlayer}"></Run>
-                                        </TextBlock>
-                                        <TextBlock Text="{Binding MatchName}" 
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding MatchName}" 
                            Margin="20,0,20,8"
                            FontSize="16"
                            Foreground="DarkGray" 
                            Opacity="0.8" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Name="QueuePullButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePopAsync"/>
-                            <Button Name="RequeueButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_RequeueAsync"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="QueuePullButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_QueuePopAsync"/>
+                                <Button Name="RequeueButton" Style="{ThemeResource ButtonRevealStyle}" IsEnabled="False" Background="#00000000" Content="&#xE70E;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Click="Button_Click_RequeueAsync"/>
+                            </Grid>
                         </Grid>
+                        <Frame Grid.Column="1" Name="ContentFrame">
+                            <Frame.ContentTransitions>
+                                <TransitionCollection>
+                                    <NavigationThemeTransition/>
+                                </TransitionCollection>
+                            </Frame.ContentTransitions>
+                        </Frame>
                     </Grid>
-                    <Frame Grid.Column="1" Name="ContentFrame">
-                        <Frame.ContentTransitions>
-                            <TransitionCollection>
-                                <NavigationThemeTransition/>
-                            </TransitionCollection>
-                        </Frame.ContentTransitions>
-                    </Frame>
-                </Grid>
-                <Grid Grid.Row="1" Background="{StaticResource HostBackdropBrush}" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="3*"></ColumnDefinition>
-                        <ColumnDefinition Width="auto"></ColumnDefinition>
-                        <ColumnDefinition Width="auto"></ColumnDefinition>
-                        <ColumnDefinition Width="auto"></ColumnDefinition>
-                        <ColumnDefinition Width="3*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <TextBox Name="LeftScore" Grid.Column="1" Text="0" TextWrapping="Wrap" Height="100" Width="100"
+                    <Grid Grid.Row="1" Background="{StaticResource HostBackdropBrush}" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="3*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Name="LeftScore" Grid.Column="1" Text="0" TextWrapping="Wrap" Height="100" Width="100"
                  FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" TextChanged="LeftScore_TextChangedAsync" />
-                    <TextBox Name="RightScore" Grid.Column="3" Text="0" TextWrapping="Wrap" Height="100" Width="100"
+                        <TextBox Name="RightScore" Grid.Column="3" Text="0" TextWrapping="Wrap" Height="100" Width="100"
             FontSize="60" TextAlignment="Center" FontWeight="ExtraBold" TextChanged="RightScore_TextChangedAsync" />
-                    <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftDecrement"/>
-                    <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftIncrement"/>
-                    <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" Click="SwitchButton_ClickAsync"></Button>
-                    <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
-                    <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
-                    <AutoSuggestBox Name="ActiveMatchPlayerOneAutocomplete" HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="ActiveMatchPlayerOneAutocomplete_QuerySubmittedAsync"/>
-                    <AutoSuggestBox Name="ActiveMatchPlayerTwoAutocomplete" HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="ActiveMatchPlayerTwoAutocomplete_QuerySubmittedAsync"/>
+                        <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftDecrement"/>
+                        <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_LeftIncrement"/>
+                        <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE13C;" Grid.Column="2" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="10,0,10,0" Click="SwitchButton_ClickAsync"></Button>
+                        <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70D;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,150,0,10" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightDecrement"/>
+                        <Button Style="{ThemeResource ButtonRevealStyle}" Background="#00000000" Content="&#xE70E;" Grid.Column="3" FontFamily="Segoe MDL2 Assets" FontSize="24" Margin="0,10,0,150" VerticalAlignment="Stretch" HorizontalAlignment="Center" Height="40" Width="100" Click="Button_Click_RightIncrement"/>
+                        <AutoSuggestBox Name="ActiveMatchPlayerOneAutocomplete" HorizontalAlignment="Stretch" Header="Player 1" Grid.Column="0" Margin="40,28,30,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="ActiveMatchPlayerOneAutocomplete_QuerySubmittedAsync"/>
+                        <AutoSuggestBox Name="ActiveMatchPlayerTwoAutocomplete" HorizontalAlignment="Stretch" Header="Player 2" Grid.Column="4" Margin="30,28,40,0" TextChanged="playerNamesAutocomplete.TextChanged" QuerySubmitted="ActiveMatchPlayerTwoAutocomplete_QuerySubmittedAsync"/>
+                    </Grid>
                 </Grid>
             </Grid>
 

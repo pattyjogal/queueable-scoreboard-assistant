@@ -1,12 +1,17 @@
-﻿using queueable_scoreboard_assistant.Common;
+﻿using Newtonsoft.Json;
+using queueable_scoreboard_assistant.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -48,10 +53,74 @@ namespace queueable_scoreboard_assistant
             ScheduledMatchesListView.ItemsSource = App.scheduledMatches;
 
             App.scheduledMatches.CollectionChanged += ScheduledMatches_CollectionChanged;
+            App.scheduledMatches.CollectionChanged += PropagateQueue;
             App.mainContentFrame = ContentFrame;
             UpdateStreamFileAsync("p1_score.txt", "0");
             UpdateStreamFileAsync("p2_score.txt", "0");
 
+            // Observe the change in network connection state
+            App.networkStateHandler.PropertyChanged += NetworkStateHandler_PropertyChanged;
+        }
+
+        private void PropagateQueue(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            //string json = JsonConvert.SerializeObject(App.scheduledMatches);
+            //QueueRequest req = new QueueRequest(json, RequestAction.QUEUE_PROPAGATE);
+            //Debug.WriteLine("Sending: " + JsonConvert.SerializeObject(req));
+            // Only write to socket if the connection has been established
+            if (App.socket != null)
+            {
+                // Serialize the queue
+               /* string json = JsonConvert.SerializeObject(App.scheduledMatches);
+                QueueRequest req = new QueueRequest(json, RequestAction.QUEUE_PROPAGATE);
+                Debug.WriteLine("Sending: " + json);*/
+
+                //App.socket.OutputStream.AsStreamForWrite().Write(Encoding.UTF8.GetBytes(json), 0, json.Length);
+            }
+        }
+
+        private void NetworkStateHandler_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("NetworkStatus"))
+            {
+                switch ((sender as NetworkStateHandler).NetworkStatus)
+                {
+                    case NetworkState.NoConnection:
+                        NetworkStatusBar.Visibility = Visibility.Collapsed;
+                        break;
+                    case NetworkState.HostingIdle:
+                        NetworkStatusBar.Visibility = Visibility.Visible;
+                        NetworkStatusBar.Background = new SolidColorBrush(Colors.Gold);
+                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.Black);
+                        NetworkStatusText.Text = "Hosting; Waiting for clients...";
+                        break;
+                    case NetworkState.HostingClient:
+                        NetworkStatusBar.Visibility = Visibility.Visible;
+                        NetworkStatusBar.Background = new SolidColorBrush(Colors.LawnGreen);
+                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                        NetworkStatusText.Text = "Hosting; Client connected";
+                        break;
+                    case NetworkState.HostFailure:
+                        NetworkStatusBar.Visibility = Visibility.Visible;
+                        NetworkStatusBar.Background = new SolidColorBrush(Colors.DarkRed);
+                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                        NetworkStatusText.Text = "Hosting Error";
+                        break;
+                    case NetworkState.ClientConnectedToServer:
+                        NetworkStatusBar.Visibility = Visibility.Visible;
+                        NetworkStatusBar.Background = new SolidColorBrush(Colors.LawnGreen);
+                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                        NetworkStatusText.Text = "Connected to server";
+                        break;
+                    case NetworkState.ClientFailure:
+                        NetworkStatusBar.Visibility = Visibility.Visible;
+                        NetworkStatusBar.Background = new SolidColorBrush(Colors.DarkRed);
+                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                        NetworkStatusText.Text = "Failed to connect to server";
+                        break;
+
+                }
+            }
         }
 
         private void ScheduledMatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

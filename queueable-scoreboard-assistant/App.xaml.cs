@@ -9,6 +9,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -31,10 +32,10 @@ namespace queueable_scoreboard_assistant
         public static ScheduledMatch activeMatch;
         public static NavigationView nagivationView;
         public static ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+        public static NetworkStateHandler networkStateHandler = new NetworkStateHandler();
+        public static StreamSocket socket;
 
         public static string PortNumber = "8750";
-
-
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code

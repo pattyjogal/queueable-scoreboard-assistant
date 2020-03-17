@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using queueable_scoreboard_assistant.Common;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -8,6 +11,8 @@ using Windows.Foundation.Collections;
 using Windows.Networking;
 using Windows.Networking.Connectivity;
 using Windows.Networking.Sockets;
+using Windows.Storage.Streams;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -27,20 +32,20 @@ namespace queueable_scoreboard_assistant
     {
         public NetworkingPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
-            StartClient(ServerAddress.Text);
+            StartChildPeer(ServerAddress.Text);
         }
 
         private void HostButton_Click(object sender, RoutedEventArgs e)
         {
-            StartServer();
+            StartRootPeer();
         }
 
-        private async void StartServer()
+        private async void StartRootPeer()
         {
             try
             {
@@ -63,85 +68,99 @@ namespace queueable_scoreboard_assistant
                 }
 
                 OkStatusPanel.Visibility = Visibility.Visible;
+
+                App.networkStateHandler.NetworkStatus = NetworkState.HostingIdle;
             }
             catch (Exception ex)
             {
                 SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
                 HostErrorMessage.Text = webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message;
                 BadStatusPanel.Visibility = Visibility.Visible;
+
+                App.networkStateHandler.NetworkStatus = NetworkState.HostFailure;
             }
         }
 
         private async void StreamSocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
         {
-            string request;
             using (var streamReader = new StreamReader(args.Socket.InputStream.AsStreamForRead()))
             {
-                request = await streamReader.ReadLineAsync();
-            }
-
-            //await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => this.serverListBox.Items.Add(string.Format("server received the request: \"{0}\"", request)));
-
-            // Echo the request back as the response.
-            using (Stream outputStream = args.Socket.OutputStream.AsStreamForWrite())
-            {
-                using (var streamWriter = new StreamWriter(outputStream))
+                DataReader reader = new DataReader(args.Socket.InputStream);
+                try
                 {
-                    await streamWriter.WriteLineAsync(request);
-                    await streamWriter.FlushAsync();
+                    while (true)
+                    {
+                        uint sizeFieldLen = await reader.LoadAsync(sizeof(uint));
+
+                        if (sizeFieldLen != sizeof(uint))
+                        {
+                            // Socket closed unexpectedly
+                            return;
+                        }
+
+                        // Read the sent result
+                        uint stringLen = reader.ReadUInt32();
+                        uint stringLenRead = await reader.LoadAsync(stringLen);
+                        if (stringLen != stringLenRead)
+                        {
+                            // Socket closed unexpectedly
+                            return;
+                        }
+
+                        string message = reader.ReadString(stringLenRead);
+                        Debug.WriteLine(message);
+
+                        QueueRequest request = JsonConvert.DeserializeObject<QueueRequest>(message);
+                        DataWriter writer = new DataWriter(args.Socket.OutputStream);
+                        switch (request.Action)
+                        {
+                            case RequestAction.HELLO:
+                                Debug.WriteLine("Sending P O N G");
+                                QueueRequest response = new QueueRequest(JsonConvert.SerializeObject("pong"), RequestAction.HELLO);
+                                response.Send(writer);
+                                break;
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    if (SocketError.GetStatus(exception.HResult) == SocketErrorStatus.Unknown)
+                    {
+                        throw;
+                    }
                 }
             }
-
-            //await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => this.serverListBox.Items.Add(string.Format("server sent back the response: \"{0}\"", request)));
-
-            sender.Dispose();
-
-            //await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => this.serverListBox.Items.Add("server closed its socket"));
         }
 
-        private async void StartClient(string address)
+        private async void StartChildPeer(string address)
         {
             try
             {
                 // Create the StreamSocket and establish a connection to the echo server.
-                using (var streamSocket = new Windows.Networking.Sockets.StreamSocket())
+                using (var streamSocket = new StreamSocket())
                 {
-                    // The server hostname that we will be establishing a connection to. In this example, the server and client are in the same process.
                     var hostName = new HostName(address);
 
                     ConnectingClientStatusPanel.Visibility = Visibility.Visible;
+                    
+
                     await streamSocket.ConnectAsync(hostName, App.PortNumber);
 
                     ConnectingClientStatusPanel.Visibility = Visibility.Collapsed;
                     OkClientStatusPanel.Visibility = Visibility.Visible;
 
-                    // Send a request to the echo server.
-                    /*                   string request = "Hello, World!";
-                                       using (Stream outputStream = streamSocket.OutputStream.AsStreamForWrite())
-                                       {
-                                           using (var streamWriter = new StreamWriter(outputStream))
-                                           {
-                                               await streamWriter.WriteLineAsync(request);
-                                               await streamWriter.FlushAsync();
-                                           }
-                                       }
+                    App.socket = streamSocket;
+                    App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer;
 
-                                       this.clientListBox.Items.Add(string.Format("client sent the request: \"{0}\"", request));
 
-                                       // Read data from the echo server.
-                                       string response;
-                                       using (Stream inputStream = streamSocket.InputStream.AsStreamForRead())
-                                       {
-                                           using (StreamReader streamReader = new StreamReader(inputStream))
-                                           {
-                                               response = await streamReader.ReadLineAsync();
-                                           }
-                                       }
+                    // Consider caching a datawriter                   
+                    DataWriter writer = new DataWriter(streamSocket.OutputStream);
 
-                                       this.clientListBox.Items.Add(string.Format("client received the response: \"{0}\" ", response));
-                                   }
-
-                                   this.clientListBox.Items.Add("client closed its socket");*/
+                    // Write first the length of the string as UINT32 value followed up by the string. 
+                    // Writing data to the writer will just store data in memory.
+                    QueueRequest request = new QueueRequest(JsonConvert.SerializeObject("ping"), RequestAction.HELLO);
+                    request.Send(writer);
+                    
                 }
             }
             catch (Exception ex)
@@ -149,9 +168,11 @@ namespace queueable_scoreboard_assistant
                 ConnectingClientStatusPanel.Visibility = Visibility.Collapsed;
                 OkClientStatusPanel.Visibility = Visibility.Collapsed;
                 BadClientStatusPanel.Visibility = Visibility.Visible;
-    
+
                 SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
                 ClientErrorMessage.Text = webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message;
+
+                App.networkStateHandler.NetworkStatus = NetworkState.ClientFailure;
             }
         }
     }
