@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Networking;
@@ -49,27 +50,13 @@ namespace queueable_scoreboard_assistant
         {
             try
             {
-                var streamSocketListener = new StreamSocketListener();
-                streamSocketListener.ConnectionReceived += StreamSocketListener_ConnectionReceived;
+                var serverDatagramSocket = new DatagramSocket();
 
-                await streamSocketListener.BindServiceNameAsync(App.PortNumber);
+                serverDatagramSocket.MessageReceived += RootPeerDatagramSocket_MessageReceived;
 
-
-                foreach (HostName localHostName in NetworkInformation.GetHostNames())
-                {
-                    if (localHostName.IPInformation != null)
-                    {
-                        if (localHostName.Type == HostNameType.Ipv4)
-                        {
-                            IPAddrText.Text = localHostName.ToString();
-                            break;
-                        }
-                    }
-                }
+                await serverDatagramSocket.BindServiceNameAsync(App.PortNumber);
 
                 OkStatusPanel.Visibility = Visibility.Visible;
-
-                App.networkStateHandler.NetworkStatus = NetworkState.HostingIdle;
             }
             catch (Exception ex)
             {
@@ -81,99 +68,133 @@ namespace queueable_scoreboard_assistant
             }
         }
 
-        private async void StreamSocketListener_ConnectionReceived(StreamSocketListener sender, StreamSocketListenerConnectionReceivedEventArgs args)
+        private async void RootPeerDatagramSocket_MessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
         {
-            using (var streamReader = new StreamReader(args.Socket.InputStream.AsStreamForRead()))
+            QueueRequest queueRequest = ReceiveQueueRequest(args);
+
+            switch (queueRequest.Action)
             {
-                DataReader reader = new DataReader(args.Socket.InputStream);
-                try
-                {
-                    while (true)
+                case RequestAction.HELLO:
+                    // Make sure that the hello message was a "ping"
+                    var connData = JsonConvert.DeserializeObject<Dictionary<string, string>>(queueRequest.JsonData);
+
+                    if (connData["type"] == "ping")
                     {
-                        uint sizeFieldLen = await reader.LoadAsync(sizeof(uint));
-
-                        if (sizeFieldLen != sizeof(uint))
-                        {
-                            // Socket closed unexpectedly
-                            return;
-                        }
-
-                        // Read the sent result
-                        uint stringLen = reader.ReadUInt32();
-                        uint stringLenRead = await reader.LoadAsync(stringLen);
-                        if (stringLen != stringLenRead)
-                        {
-                            // Socket closed unexpectedly
-                            return;
-                        }
-
-                        string message = reader.ReadString(stringLenRead);
-                        Debug.WriteLine(message);
-
-                        QueueRequest request = JsonConvert.DeserializeObject<QueueRequest>(message);
-                        DataWriter writer = new DataWriter(args.Socket.OutputStream);
-                        switch (request.Action)
-                        {
-                            case RequestAction.HELLO:
-                                Debug.WriteLine("Sending P O N G");
-                                QueueRequest response = new QueueRequest(JsonConvert.SerializeObject("pong"), RequestAction.HELLO);
-                                response.Send(writer);
-                                break;
-                        }
+                        HandleNewPeer(args.RemoteAddress, connData["port"]);
                     }
-                }
-                catch (Exception exception)
+
+                    break;
+            }
+        }
+
+        private async void HandleNewPeer(HostName senderAddress, string senderPort)
+        {
+            Debug.WriteLine("New conn from: " + senderAddress + ":" + senderPort);
+            App.attachedClientAddresses.Add((senderAddress, senderPort));
+
+            // Send back an acknowledgment
+            QueueRequest queueRequest = new QueueRequest("pong", RequestAction.HELLO);
+            string jsonRequest = JsonConvert.SerializeObject(queueRequest);
+            await SendMessageToPeer(senderAddress, senderPort, jsonRequest).ConfigureAwait(false);
+        }
+        
+        private async void StartChildPeer(string address)
+        {
+            try
+            {
+                DatagramSocket clientDatagramSocket = new DatagramSocket();
+                
+                clientDatagramSocket.MessageReceived += ChildPeerDatagramSocket_MessageReceived;
+
+                var hostName = new HostName(address);
+
+                await clientDatagramSocket.BindServiceNameAsync("9000");
+
+                // The ping request to register with the server
+                Dictionary<string, string> data = new Dictionary<string, string>() 
                 {
-                    if (SocketError.GetStatus(exception.HResult) == SocketErrorStatus.Unknown)
+                    { "type", "ping" },
+                    { "port", "9000" }
+                };
+                QueueRequest queueRequest = new QueueRequest(JsonConvert.SerializeObject(data), RequestAction.HELLO);
+                string requestJson = JsonConvert.SerializeObject(queueRequest);
+                await SendMessageToPeer(hostName, App.PortNumber, requestJson).ConfigureAwait(false);
+
+                App.networkStateHandler.NetworkStatus = NetworkState.HostingIdle;
+            }
+            catch (Exception ex)
+            {
+                SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
+                Debug.WriteLine(ex);
+                await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => 
                     {
-                        throw;
+                        ClientErrorMessage.Visibility = Visibility.Visible;
+                        ClientErrorMessage.Text = webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message;
+                        App.networkStateHandler.NetworkStatus = NetworkState.ClientFailure;
+                    });
+            }
+        }
+
+        private async void ChildPeerDatagramSocket_MessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
+        {
+            QueueRequest queueRequest = ReceiveQueueRequest(args);
+
+            switch (queueRequest.Action)
+            {
+                case RequestAction.HELLO:
+                    // Ensure that the response was a "pong"
+                    if (queueRequest.JsonData == "pong")
+                    {
+                        await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                            App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer);
+                    }
+                    break;
+            }
+        }
+
+        private async Task SendMessageToPeer(HostName hostName, string port, string message)
+        {
+            using (var serverDatagramSocket = new DatagramSocket())
+            {
+                using (Stream outputStream = (await serverDatagramSocket.GetOutputStreamAsync(hostName, port)).AsStreamForWrite())
+                {
+                    using (var streamWriter = new StreamWriter(outputStream))
+                    {
+                        await streamWriter.WriteLineAsync(message).ConfigureAwait(false);
+                        await streamWriter.FlushAsync().ConfigureAwait(false);
                     }
                 }
             }
         }
 
-        private async void StartChildPeer(string address)
+        private QueueRequest ReceiveQueueRequest(DatagramSocketMessageReceivedEventArgs args)
         {
-            try
+            string request;
+            using (DataReader dataReader = args.GetDataReader())
             {
-                // Create the StreamSocket and establish a connection to the echo server.
-                using (var streamSocket = new StreamSocket())
+                request = dataReader.ReadString(dataReader.UnconsumedBufferLength).Trim();
+            }
+            Debug.WriteLine(request);
+            // Attempt to read the incoming message
+            List<string> deserializationErrors = new List<string>();
+            var queueRequest = JsonConvert.DeserializeObject<QueueRequest>(request,
+                new JsonSerializerSettings
                 {
-                    var hostName = new HostName(address);
+                    Error = delegate (object errorSender, Newtonsoft.Json.Serialization.ErrorEventArgs errorArgs)
+                    {
+                        deserializationErrors.Add(errorArgs.ErrorContext.Error.Message);
+                        errorArgs.ErrorContext.Handled = true;
+                    },
+                });
 
-                    ConnectingClientStatusPanel.Visibility = Visibility.Visible;
-                    
-
-                    await streamSocket.ConnectAsync(hostName, App.PortNumber);
-
-                    ConnectingClientStatusPanel.Visibility = Visibility.Collapsed;
-                    OkClientStatusPanel.Visibility = Visibility.Visible;
-
-                    App.socket = streamSocket;
-                    App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer;
-
-
-                    // Consider caching a datawriter                   
-                    DataWriter writer = new DataWriter(streamSocket.OutputStream);
-
-                    // Write first the length of the string as UINT32 value followed up by the string. 
-                    // Writing data to the writer will just store data in memory.
-                    QueueRequest request = new QueueRequest(JsonConvert.SerializeObject("ping"), RequestAction.HELLO);
-                    request.Send(writer);
-                    
-                }
-            }
-            catch (Exception ex)
+            // We cannot handle this message if it couldn't properly deserialize
+            if (deserializationErrors.Count > 0)
             {
-                ConnectingClientStatusPanel.Visibility = Visibility.Collapsed;
-                OkClientStatusPanel.Visibility = Visibility.Collapsed;
-                BadClientStatusPanel.Visibility = Visibility.Visible;
-
-                SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-                ClientErrorMessage.Text = webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message;
-
-                App.networkStateHandler.NetworkStatus = NetworkState.ClientFailure;
+                Debug.Fail("Could not deserialize!");
+                throw new InvalidDataException();
             }
+
+            return queueRequest;
         }
     }
 }

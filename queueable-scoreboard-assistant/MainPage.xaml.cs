@@ -12,6 +12,7 @@ using System.Text;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -33,7 +34,7 @@ namespace queueable_scoreboard_assistant
         private readonly DfaAutocomplete playerNamesAutocomplete = App.playerNamesAutocomplete;
         private bool _isScoreboardPopulated = false;
         public bool IsScoreboardPopulated
-        { 
+        {
             get
             {
                 return _isScoreboardPopulated;
@@ -71,55 +72,58 @@ namespace queueable_scoreboard_assistant
             if (App.socket != null)
             {
                 // Serialize the queue
-               /* string json = JsonConvert.SerializeObject(App.scheduledMatches);
-                QueueRequest req = new QueueRequest(json, RequestAction.QUEUE_PROPAGATE);
-                Debug.WriteLine("Sending: " + json);*/
+                /* string json = JsonConvert.SerializeObject(App.scheduledMatches);
+                 QueueRequest req = new QueueRequest(json, RequestAction.QUEUE_PROPAGATE);
+                 Debug.WriteLine("Sending: " + json);*/
 
                 //App.socket.OutputStream.AsStreamForWrite().Write(Encoding.UTF8.GetBytes(json), 0, json.Length);
             }
         }
 
-        private void NetworkStateHandler_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private async void NetworkStateHandler_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals("NetworkStatus"))
             {
-                switch ((sender as NetworkStateHandler).NetworkStatus)
-                {
-                    case NetworkState.NoConnection:
-                        NetworkStatusBar.Visibility = Visibility.Collapsed;
-                        break;
-                    case NetworkState.HostingIdle:
-                        NetworkStatusBar.Visibility = Visibility.Visible;
-                        NetworkStatusBar.Background = new SolidColorBrush(Colors.Gold);
-                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.Black);
-                        NetworkStatusText.Text = "Hosting; Waiting for clients...";
-                        break;
-                    case NetworkState.HostingClient:
-                        NetworkStatusBar.Visibility = Visibility.Visible;
-                        NetworkStatusBar.Background = new SolidColorBrush(Colors.LawnGreen);
-                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
-                        NetworkStatusText.Text = "Hosting; Client connected";
-                        break;
-                    case NetworkState.HostFailure:
-                        NetworkStatusBar.Visibility = Visibility.Visible;
-                        NetworkStatusBar.Background = new SolidColorBrush(Colors.DarkRed);
-                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
-                        NetworkStatusText.Text = "Hosting Error";
-                        break;
-                    case NetworkState.ClientConnectedToServer:
-                        NetworkStatusBar.Visibility = Visibility.Visible;
-                        NetworkStatusBar.Background = new SolidColorBrush(Colors.LawnGreen);
-                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
-                        NetworkStatusText.Text = "Connected to server";
-                        break;
-                    case NetworkState.ClientFailure:
-                        NetworkStatusBar.Visibility = Visibility.Visible;
-                        NetworkStatusBar.Background = new SolidColorBrush(Colors.DarkRed);
-                        NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
-                        NetworkStatusText.Text = "Failed to connect to server";
-                        break;
+                await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        switch ((sender as NetworkStateHandler).NetworkStatus)
+                        {
+                            case NetworkState.NoConnection:
+                                NetworkStatusBar.Visibility = Visibility.Collapsed;
+                                break;
+                            case NetworkState.HostingIdle:
+                                NetworkStatusBar.Visibility = Visibility.Visible;
+                                NetworkStatusBar.Background = new SolidColorBrush(Colors.Gold);
+                                NetworkStatusText.Foreground = new SolidColorBrush(Colors.Black);
+                                NetworkStatusText.Text = "Hosting; Waiting for clients...";
+                                break;
+                            case NetworkState.HostingClient:
+                                NetworkStatusBar.Visibility = Visibility.Visible;
+                                NetworkStatusBar.Background = new SolidColorBrush(Colors.LawnGreen);
+                                NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                                NetworkStatusText.Text = "Hosting; Client connected";
+                                break;
+                            case NetworkState.HostFailure:
+                                NetworkStatusBar.Visibility = Visibility.Visible;
+                                NetworkStatusBar.Background = new SolidColorBrush(Colors.DarkRed);
+                                NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                                NetworkStatusText.Text = "Hosting Error";
+                                break;
+                            case NetworkState.ClientConnectedToServer:
+                                NetworkStatusBar.Visibility = Visibility.Visible;
+                                NetworkStatusBar.Background = new SolidColorBrush(Colors.LawnGreen);
+                                NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                                NetworkStatusText.Text = "Connected to server";
+                                break;
+                            case NetworkState.ClientFailure:
+                                NetworkStatusBar.Visibility = Visibility.Visible;
+                                NetworkStatusBar.Background = new SolidColorBrush(Colors.DarkRed);
+                                NetworkStatusText.Foreground = new SolidColorBrush(Colors.White);
+                                NetworkStatusText.Text = "Failed to connect to server";
+                                break;
 
-                }
+                        }
+                    });
             }
         }
 
@@ -133,7 +137,8 @@ namespace queueable_scoreboard_assistant
             try
             {
                 LeftScore.Text = (int.Parse(LeftScore.Text) - 1).ToString();
-            } catch
+            }
+            catch
             {
                 LeftScore.Text = "NaN";
             }
@@ -206,7 +211,7 @@ namespace queueable_scoreboard_assistant
             if (App.scheduledMatches.Count > 0)
             {
                 App.activeMatch = App.scheduledMatches.First();
-                App.scheduledMatches.RemoveAt(0); 
+                App.scheduledMatches.RemoveAt(0);
 
                 ActiveMatchPlayerOneAutocomplete.Text = App.activeMatch.FirstPlayer;
                 ActiveMatchPlayerTwoAutocomplete.Text = App.activeMatch.SecondPlayer;
@@ -336,12 +341,12 @@ namespace queueable_scoreboard_assistant
             object outputFolder;
             if (App.localSettings.Values.TryGetValue("output_folder", out outputFolder))
             {
-                Windows.Storage.StorageFolder storageFolder = 
+                Windows.Storage.StorageFolder storageFolder =
                     await Windows.Storage.StorageFolder.GetFolderFromPathAsync(outputFolder as string);
                 Windows.Storage.StorageFile outFile =
                     await storageFolder.CreateFileAsync(filename, Windows.Storage.CreationCollisionOption.ReplaceExisting);
                 await Windows.Storage.FileIO.WriteTextAsync(outFile, value);
-            } 
+            }
             else
             {
                 ContentDialog alert = new ContentDialog

@@ -9,6 +9,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Networking;
 using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.UI.Xaml;
@@ -35,7 +36,9 @@ namespace queueable_scoreboard_assistant
         public static NetworkStateHandler networkStateHandler = new NetworkStateHandler();
         public static StreamSocket socket;
 
-        public static string PortNumber = "8750";
+        public static readonly ObservableCollection<(HostName, string)> attachedClientAddresses = new ObservableCollection<(HostName, string)>();
+
+        public const string PortNumber = "8750";
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
