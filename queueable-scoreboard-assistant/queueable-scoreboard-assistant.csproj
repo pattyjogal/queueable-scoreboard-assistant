@@ -137,6 +137,8 @@
     <Compile Include="Common\PrefixState.cs" />
     <Compile Include="Common\QueueRequest.cs" />
     <Compile Include="Common\ScheduledMatch.cs" />
+    <Compile Include="Common\ScoreboardState.cs" />
+    <Compile Include="Common\ScoreboardStateHandler.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

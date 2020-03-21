@@ -39,5 +39,6 @@
             <TextBlock Name="HostErrorMessage"></TextBlock>
         </StackPanel>
         <Button Name="HostButton" Content="Host" Click="HostButton_Click"/>
+        <ListView Name="ConnectedHostsListView" />
     </StackPanel>
 </Page>

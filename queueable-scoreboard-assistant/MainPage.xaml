@@ -52,18 +52,18 @@
                                     <DataTemplate>
                                         <StackPanel>
                                             <TextBlock 
-                           Margin="20,0,20,8"
-                           FontSize="24" 
-                           FontWeight="SemiBold">
-                                        <Run Text="{Binding FirstPlayer}"></Run>
-                                        <Run> vs. </Run>
-                                        <Run Text="{Binding SecondPlayer}"></Run>
+                                               Margin="20,0,20,8"
+                                               FontSize="24" 
+                                               FontWeight="SemiBold">
+                                                <Run Text="{Binding FirstPlayer}"></Run>
+                                                <Run> vs. </Run>
+                                                <Run Text="{Binding SecondPlayer}"></Run>
                                             </TextBlock>
                                             <TextBlock Text="{Binding MatchName}" 
-                           Margin="20,0,20,8"
-                           FontSize="16"
-                           Foreground="DarkGray" 
-                           Opacity="0.8" />
+                                               Margin="20,0,20,8"
+                                               FontSize="16"
+                                               Foreground="DarkGray" 
+                                               Opacity="0.8" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

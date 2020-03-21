@@ -1,26 +1,16 @@
 ﻿using Newtonsoft.Json;
 using queueable_scoreboard_assistant.Common;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Core;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -59,24 +49,38 @@ namespace queueable_scoreboard_assistant
             UpdateStreamFileAsync("p1_score.txt", "0");
             UpdateStreamFileAsync("p2_score.txt", "0");
 
-            // Observe the change in network connection state
+            // Listen for common state changes
             App.networkStateHandler.PropertyChanged += NetworkStateHandler_PropertyChanged;
+            App.scoreboardStateHandler.PropertyChanged += ScoreboardStateHandler_PropertyChanged;
         }
 
-        private void PropagateQueue(object sender, NotifyCollectionChangedEventArgs e)
+        private void ScoreboardStateHandler_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            //string json = JsonConvert.SerializeObject(App.scheduledMatches);
-            //QueueRequest req = new QueueRequest(json, RequestAction.QUEUE_PROPAGATE);
-            //Debug.WriteLine("Sending: " + JsonConvert.SerializeObject(req));
-            // Only write to socket if the connection has been established
-            if (App.socket != null)
-            {
-                // Serialize the queue
-                /* string json = JsonConvert.SerializeObject(App.scheduledMatches);
-                 QueueRequest req = new QueueRequest(json, RequestAction.QUEUE_PROPAGATE);
-                 Debug.WriteLine("Sending: " + json);*/
+            LeftScore.Text = App.scoreboardStateHandler.ScoreboardState.LeftScore.ToString();
+            RightScore.Text = App.scoreboardStateHandler.ScoreboardState.RightScore.ToString();
+            ActiveMatchPlayerOneAutocomplete.Text = App.scoreboardStateHandler.ScoreboardState.LeftPlayerName.ToString();
+            ActiveMatchPlayerTwoAutocomplete.Text = App.scoreboardStateHandler.ScoreboardState.RightPlayerName.ToString();
+        }
 
-                //App.socket.OutputStream.AsStreamForWrite().Write(Encoding.UTF8.GetBytes(json), 0, json.Length);
+        public static async void PropagateQueue(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            string scheduledMatchesJson = JsonConvert.SerializeObject(App.scheduledMatches);
+            QueueRequest queueRequest = new QueueRequest(scheduledMatchesJson, RequestAction.QUEUE_PROPAGATE);
+            string requestJson = JsonConvert.SerializeObject(queueRequest);
+            
+            // If there are attached client addresses, we're the root
+            if (App.attachedClientAddresses != null)    
+            {
+                foreach ((var host, var port) in App.attachedClientAddresses)
+                {
+                    await NetworkingPage.SendMessageToPeer(host, port, requestJson);
+                }
+            }
+            // Otherwise, we're a normal peer, and are sending this to the root
+            else
+            {
+                Debug.WriteLine("I have been invoked");
+                await NetworkingPage.SendMessageToPeer(App.rootHostName, App.PortNumber, requestJson);
             }
         }
 
@@ -134,50 +138,30 @@ namespace queueable_scoreboard_assistant
 
         private void Button_Click_LeftDecrement(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                LeftScore.Text = (int.Parse(LeftScore.Text) - 1).ToString();
-            }
-            catch
-            {
-                LeftScore.Text = "NaN";
-            }
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            updatedScoreboardState.LeftScore -= 1;
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
         }
 
         private void Button_Click_RightDecrement(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                RightScore.Text = (int.Parse(RightScore.Text) - 1).ToString();
-            }
-            catch
-            {
-                RightScore.Text = "NaN";
-            }
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            updatedScoreboardState.RightScore -= 1;
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
         }
 
         private void Button_Click_LeftIncrement(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                LeftScore.Text = (int.Parse(LeftScore.Text) + 1).ToString();
-            }
-            catch
-            {
-                LeftScore.Text = "NaN";
-            }
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            updatedScoreboardState.LeftScore += 1;
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
         }
 
         private void Button_Click_RightIncrement(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                RightScore.Text = (int.Parse(RightScore.Text) + 1).ToString();
-            }
-            catch
-            {
-                RightScore.Text = "NaN";
-            }
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            updatedScoreboardState.RightScore += 1;
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
         }
 
 
@@ -210,11 +194,13 @@ namespace queueable_scoreboard_assistant
         {
             if (App.scheduledMatches.Count > 0)
             {
+                ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+
                 App.activeMatch = App.scheduledMatches.First();
                 App.scheduledMatches.RemoveAt(0);
 
-                ActiveMatchPlayerOneAutocomplete.Text = App.activeMatch.FirstPlayer;
-                ActiveMatchPlayerTwoAutocomplete.Text = App.activeMatch.SecondPlayer;
+                updatedScoreboardState.LeftPlayerName = App.activeMatch.FirstPlayer;
+                updatedScoreboardState.RightPlayerName = App.activeMatch.SecondPlayer;
 
                 // Now that something has been dequeued, we alow requeuing
                 IsScoreboardPopulated = true;
@@ -222,13 +208,17 @@ namespace queueable_scoreboard_assistant
                 // Write the new names out to file
                 try
                 {
-                    await UpdateStreamFileAsync("p1_name.txt", ActiveMatchPlayerOneAutocomplete.Text);
-                    await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
+                    await UpdateStreamFileAsync("p1_name.txt", updatedScoreboardState.LeftPlayerName);
+                    await UpdateStreamFileAsync("p2_name.txt", updatedScoreboardState.RightPlayerName);
                     await UpdateStreamFileAsync("p1_score.txt", "0");
                     await UpdateStreamFileAsync("p2_score.txt", "0");
                     await UpdateStreamFileAsync("match_name.txt", App.activeMatch.MatchName);
                     ActiveMatchPlayerOneAutocomplete.QueryIcon = null;
                     ActiveMatchPlayerTwoAutocomplete.QueryIcon = null;
+                }
+                catch (System.IO.FileNotFoundException)
+                {
+                    await WarnUserNoDirectoryOutput();
                 }
                 catch (Exception ex)
                 {
@@ -246,6 +236,8 @@ namespace queueable_scoreboard_assistant
 
                     ContentDialogResult result = await alert.ShowAsync();
                 }
+
+                App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
             }
         }
 
@@ -253,6 +245,8 @@ namespace queueable_scoreboard_assistant
         {
             if (IsScoreboardPopulated)
             {
+                ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+
                 ScheduledMatch nextMatch = new ScheduledMatch(
                     ActiveMatchPlayerOneAutocomplete.Text,
                     ActiveMatchPlayerTwoAutocomplete.Text,
@@ -262,8 +256,8 @@ namespace queueable_scoreboard_assistant
                 App.scheduledMatches.Insert(0, nextMatch);
                 App.activeMatch = null;
 
-                ActiveMatchPlayerOneAutocomplete.Text = "";
-                ActiveMatchPlayerTwoAutocomplete.Text = "";
+                updatedScoreboardState.LeftPlayerName = "";
+                updatedScoreboardState.RightPlayerName = "";
 
                 // Once a match has been dequeued, the scoreboard is blank
                 IsScoreboardPopulated = false;
@@ -278,6 +272,10 @@ namespace queueable_scoreboard_assistant
                     await UpdateStreamFileAsync("match_name.txt", "");
 
                 }
+                catch (System.IO.FileNotFoundException)
+                {
+                    await WarnUserNoDirectoryOutput();
+                }
                 catch (Exception ex)
                 {
                     if (ex.HResult != 0x80070497)
@@ -295,6 +293,7 @@ namespace queueable_scoreboard_assistant
                     ContentDialogResult result = await alert.ShowAsync();
                 }
 
+                App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
             }
         }
 
@@ -313,27 +312,76 @@ namespace queueable_scoreboard_assistant
 
         private async void LeftScore_TextChangedAsync(object sender, TextChangedEventArgs e)
         {
-            await UpdateStreamFileAsync("p1_score.txt", (sender as TextBox).Text);
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            try
+            {
+                updatedScoreboardState.LeftScore = int.Parse((sender as TextBox).Text);
+            }
+            catch (FormatException)
+            {
+                updatedScoreboardState.LeftScore = 0;
+            }
+
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
+
+            try
+            {
+                await UpdateStreamFileAsync("p1_score.txt", (sender as TextBox).Text);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                await WarnUserNoDirectoryOutput();
+            }
         }
 
         private async void RightScore_TextChangedAsync(object sender, TextChangedEventArgs e)
         {
-            await UpdateStreamFileAsync("p2_score.txt", (sender as TextBox).Text);
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            try
+            {
+                updatedScoreboardState.RightScore = int.Parse((sender as TextBox).Text);
+            }
+            catch (FormatException)
+            {
+                updatedScoreboardState.RightScore = 0;
+            }
 
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
+
+            try
+            {
+                await UpdateStreamFileAsync("p2_score.txt", (sender as TextBox).Text);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                await WarnUserNoDirectoryOutput();
+            }
         }
 
         private async void ActiveMatchPlayerOneAutocomplete_QuerySubmittedAsync(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             playerNamesAutocomplete.QuerySubmitted(sender, args);
-            await UpdateStreamFileAsync("p1_name.txt", sender.Text);
-
+            try
+            {
+                await UpdateStreamFileAsync("p_name.txt", sender.Text);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                await WarnUserNoDirectoryOutput();
+            }
         }
 
         private async void ActiveMatchPlayerTwoAutocomplete_QuerySubmittedAsync(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             playerNamesAutocomplete.QuerySubmitted(sender, args);
-            await UpdateStreamFileAsync("p2_name.txt", sender.Text);
-
+            try
+            {
+                await UpdateStreamFileAsync("p2_name.txt", sender.Text);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                await WarnUserNoDirectoryOutput();
+            }
         }
 
         private async System.Threading.Tasks.Task UpdateStreamFileAsync(string filename, string value)
@@ -349,14 +397,7 @@ namespace queueable_scoreboard_assistant
             }
             else
             {
-                ContentDialog alert = new ContentDialog
-                {
-                    Title = "Could not save",
-                    Content = "You must set an output directory to write files for streaming software.",
-                    CloseButtonText = "Ok"
-                };
-
-                ContentDialogResult result = await alert.ShowAsync();
+                throw new System.IO.FileNotFoundException();
             }
         }
 
@@ -370,10 +411,29 @@ namespace queueable_scoreboard_assistant
             LeftScore.Text = RightScore.Text;
             RightScore.Text = temp;
 
-            await UpdateStreamFileAsync("p1_name.txt", ActiveMatchPlayerOneAutocomplete.Text);
-            await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
-            await UpdateStreamFileAsync("p1_score.txt", LeftScore.Text);
-            await UpdateStreamFileAsync("p2_score.txt", RightScore.Text);
+            try
+            {
+                await UpdateStreamFileAsync("p1_name.txt", ActiveMatchPlayerOneAutocomplete.Text);
+                await UpdateStreamFileAsync("p2_name.txt", ActiveMatchPlayerTwoAutocomplete.Text);
+                await UpdateStreamFileAsync("p1_score.txt", LeftScore.Text);
+                await UpdateStreamFileAsync("p2_score.txt", RightScore.Text);
+            } 
+            catch (System.IO.FileNotFoundException)
+            {
+                await WarnUserNoDirectoryOutput();
+            }
+        }
+
+        private static async Task WarnUserNoDirectoryOutput()
+        {
+            ContentDialog alert = new ContentDialog
+            {
+                Title = "Could not save",
+                Content = "You must set an output directory to write files for streaming software.",
+                CloseButtonText = "Ok"
+            };
+
+            ContentDialogResult result = await alert.ShowAsync();
         }
     }
 }

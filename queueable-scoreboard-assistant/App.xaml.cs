@@ -1,23 +1,13 @@
 ﻿using queueable_scoreboard_assistant.Common;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Networking;
 using Windows.Networking.Sockets;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace queueable_scoreboard_assistant
@@ -27,7 +17,7 @@ namespace queueable_scoreboard_assistant
     /// </summary>
     sealed partial class App : Application
     {
-        public static readonly ObservableCollection<ScheduledMatch> scheduledMatches = new ObservableCollection<ScheduledMatch>();
+        public static ObservableCollection<ScheduledMatch> scheduledMatches = new ObservableCollection<ScheduledMatch>();
         public static readonly DfaAutocomplete playerNamesAutocomplete = new DfaAutocomplete();
         public static Frame mainContentFrame;
         public static ScheduledMatch activeMatch;
@@ -35,8 +25,10 @@ namespace queueable_scoreboard_assistant
         public static ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
         public static NetworkStateHandler networkStateHandler = new NetworkStateHandler();
         public static StreamSocket socket;
-
-        public static readonly ObservableCollection<(HostName, string)> attachedClientAddresses = new ObservableCollection<(HostName, string)>();
+        public static ScoreboardStateHandler scoreboardStateHandler = new ScoreboardStateHandler();
+        
+        internal static HostName rootHostName = null;
+        internal static ObservableCollection<(HostName, string)> attachedClientAddresses = null;
 
         public const string PortNumber = "8750";
 
