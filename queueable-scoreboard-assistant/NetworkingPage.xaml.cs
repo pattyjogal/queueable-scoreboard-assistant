@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Networking;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
@@ -22,6 +23,8 @@ namespace queueable_scoreboard_assistant
     /// </summary>
     public sealed partial class NetworkingPage : Page
     {
+        private DatagramSocket clientDatagramSocket;
+
         public NetworkingPage()
         {
             InitializeComponent();
@@ -130,7 +133,9 @@ namespace queueable_scoreboard_assistant
                 
                 clientDatagramSocket.MessageReceived += ChildPeerDatagramSocket_MessageReceived;
 
-                await clientDatagramSocket.BindServiceNameAsync("9000");
+                await clientDatagramSocket.ConnectAsync(hostName, App.PortNumber);
+
+                CoreApplication.Properties.Add("clientSocket", clientDatagramSocket);
 
                 // The ping request to register with the server
                 Dictionary<string, string> data = new Dictionary<string, string>() 
@@ -159,6 +164,7 @@ namespace queueable_scoreboard_assistant
 
         private async void ChildPeerDatagramSocket_MessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
         {
+            Debug.WriteLine("GOT IT");
             QueueRequest queueRequest = ReceiveQueueRequest(args);
 
             switch (queueRequest.Action)
@@ -183,15 +189,14 @@ namespace queueable_scoreboard_assistant
 
         public static async Task SendMessageToPeer(HostName hostName, string port, string message)
         {
-            using (var serverDatagramSocket = new DatagramSocket())
+            object outValue;
+            if (CoreApplication.Properties.TryGetValue("clientSocket", out outValue) && outValue is DatagramSocket)
             {
-                using (Stream outputStream = (await serverDatagramSocket.GetOutputStreamAsync(hostName, port)).AsStreamForWrite())
+                DatagramSocket datagramSocket = outValue as DatagramSocket;
+                using (DataWriter outputWriter = new DataWriter(datagramSocket.OutputStream))
                 {
-                    using (var streamWriter = new StreamWriter(outputStream))
-                    {
-                        await streamWriter.WriteLineAsync(message).ConfigureAwait(false);
-                        await streamWriter.FlushAsync().ConfigureAwait(false);
-                    }
+                    outputWriter.WriteString(message);
+                    await outputWriter.StoreAsync();
                 }
             }
         }
@@ -205,25 +210,17 @@ namespace queueable_scoreboard_assistant
             }
             Debug.WriteLine(request);
             // Attempt to read the incoming message
-            List<string> deserializationErrors = new List<string>();
-            var queueRequest = JsonConvert.DeserializeObject<QueueRequest>(request,
-                new JsonSerializerSettings
-                {
-                    Error = delegate (object errorSender, Newtonsoft.Json.Serialization.ErrorEventArgs errorArgs)
-                    {
-                        deserializationErrors.Add(errorArgs.ErrorContext.Error.Message);
-                        errorArgs.ErrorContext.Handled = true;
-                    },
-                });
-
-            // We cannot handle this message if it couldn't properly deserialize
-            if (deserializationErrors.Count > 0)
+            try
             {
-                Debug.Fail("Could not deserialize!");
-                throw new InvalidDataException();
+                var queueRequest = JsonConvert.DeserializeObject<QueueRequest>(request);
+                return queueRequest;
             }
-
-            return queueRequest;
+            catch (JsonSerializationException e)
+            {
+                // We cannot handle this message if it couldn't properly deserialize
+                Debug.Fail("Could not deserialize!");
+                throw e;
+            }
         }
     }
 }

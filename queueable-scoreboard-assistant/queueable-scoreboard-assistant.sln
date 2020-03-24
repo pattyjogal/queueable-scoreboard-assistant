@@ -10,18 +10,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "queueable-scoreboard-assist
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D} = {FA1710E2-CEA1-4290-ABAC-99FA430DC78D}
 	EndProjectSection
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "QueuableScoreboardAssistantHeadless", "..\QueuableScoreboardAssistantHeadless\QueuableScoreboardAssistantHeadless.pyproj", "{1777E80A-1E09-4B50-8C5F-358BDC78A213}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
 		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|ARM = Release|ARM
 		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|ARM.ActiveCfg = Debug|ARM
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|ARM.Build.0 = Debug|ARM
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|ARM.Deploy.0 = Debug|ARM
@@ -34,6 +39,7 @@ Global
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|x86.ActiveCfg = Debug|x86
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|x86.Build.0 = Debug|x86
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Debug|x86.Deploy.0 = Debug|x86
+		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|Any CPU.ActiveCfg = Release|x86
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|ARM.ActiveCfg = Release|ARM
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|ARM.Build.0 = Release|ARM
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|ARM.Deploy.0 = Release|ARM
@@ -46,6 +52,7 @@ Global
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|x86.ActiveCfg = Release|x86
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|x86.Build.0 = Release|x86
 		{FA1710E2-CEA1-4290-ABAC-99FA430DC78D}.Release|x86.Deploy.0 = Release|x86
+		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|ARM.ActiveCfg = Debug|ARM
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|ARM.Build.0 = Debug|ARM
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|ARM.Deploy.0 = Debug|ARM
@@ -58,6 +65,7 @@ Global
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|x86.ActiveCfg = Debug|x86
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|x86.Build.0 = Debug|x86
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Debug|x86.Deploy.0 = Debug|x86
+		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|Any CPU.ActiveCfg = Release|x86
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|ARM.ActiveCfg = Release|ARM
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|ARM.Build.0 = Release|ARM
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|ARM.Deploy.0 = Release|ARM
@@ -70,6 +78,16 @@ Global
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|x86.ActiveCfg = Release|x86
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|x86.Build.0 = Release|x86
 		{ED2894F7-1574-47EC-98FB-2112F565562F}.Release|x86.Deploy.0 = Release|x86
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Release|ARM.ActiveCfg = Release|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Release|x64.ActiveCfg = Release|Any CPU
+		{1777E80A-1E09-4B50-8C5F-358BDC78A213}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
