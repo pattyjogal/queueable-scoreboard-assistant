@@ -113,6 +113,33 @@ namespace queueable_scoreboard_assistant
             Debug.WriteLine(App.scheduledMatches);
         }
 
+        private static void HandleServerAck(QueueRequest queueRequest)
+        {
+            App.scheduledMatches.CollectionChanged -= MainPage.PropagateQueue;
+
+            App.scheduledMatches.Clear();
+            
+            try
+            {
+                var newScheduledMatches
+                    = JsonConvert.DeserializeObject<ObservableCollection<ScheduledMatch>>(queueRequest.JsonData);
+
+                foreach (var item in newScheduledMatches)
+                {
+                    App.scheduledMatches.Add(item);
+                }
+
+                App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer;
+            }
+            catch (JsonSerializationException)
+            {
+                // TODO: Handle this
+            }
+  
+
+            App.scheduledMatches.CollectionChanged += MainPage.PropagateQueue;
+        }
+
         private async void HandleNewPeer(HostName senderAddress, string senderPort)
         {
             Debug.WriteLine("New conn from: " + senderAddress + ":" + senderPort);
@@ -143,7 +170,6 @@ namespace queueable_scoreboard_assistant
                 Dictionary<string, string> data = new Dictionary<string, string>() 
                 {
                     { "type", "ping" },
-                    { "port", "9000" }
                 };
                 QueueRequest queueRequest = new QueueRequest(JsonConvert.SerializeObject(data), RequestAction.HELLO);
                 string requestJson = JsonConvert.SerializeObject(queueRequest);
@@ -166,19 +192,14 @@ namespace queueable_scoreboard_assistant
 
         private async void ChildPeerDatagramSocket_MessageReceived(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args)
         {
-            Debug.WriteLine("GOT IT");
             QueueRequest queueRequest = ReceiveQueueRequest(args);
 
             switch (queueRequest.Action)
             {
                 case RequestAction.HELLO:
-                    // Ensure that the response was a "pong"
-                    if (queueRequest.JsonData == "\"pong\"")
-                    {
-                        await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                            App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer);
-                    }
-
+                    await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        HandleServerAck(queueRequest));
+                    
                     break;
 
                 case RequestAction.QUEUE_PROPAGATE:

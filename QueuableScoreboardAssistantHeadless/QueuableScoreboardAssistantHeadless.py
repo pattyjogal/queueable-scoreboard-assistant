@@ -49,15 +49,14 @@ class QueueServerProtocol:
         global clients
 
         message = data.decode()
-        print(f'Got message {message}')
         request = QueueRequest.from_message(message)
 
         if request.action == RequestAction.HELLO:
             if request.data.get('type') == 'ping':
                 clients.add(addr)
 
-                print(f'sending pong to {addr}')
-                response = QueueRequest(RequestAction.HELLO, "pong")
+                print(f'sending acknowledgment to {addr}')
+                response = QueueRequest(RequestAction.HELLO, queue_state)
                 self.transport.sendto(
                     response.to_json().encode('utf-8'),
                     addr
