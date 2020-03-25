@@ -72,6 +72,8 @@ namespace queueable_scoreboard_assistant
         {
             QueueRequest queueRequest = ReceiveQueueRequest(args);
 
+            Debug.WriteLine(queueRequest.JsonData);
+
             switch (queueRequest.Action)
             {
                 case RequestAction.HELLO:
@@ -122,7 +124,7 @@ namespace queueable_scoreboard_assistant
             // Send back an acknowledgment
             QueueRequest queueRequest = new QueueRequest("pong", RequestAction.HELLO);
             string jsonRequest = JsonConvert.SerializeObject(queueRequest);
-            await SendMessageToPeer(senderAddress, senderPort, jsonRequest).ConfigureAwait(false);
+            await SendMessageToServer(jsonRequest).ConfigureAwait(false);
         }
         
         private async void StartChildPeer(HostName hostName)
@@ -145,9 +147,9 @@ namespace queueable_scoreboard_assistant
                 };
                 QueueRequest queueRequest = new QueueRequest(JsonConvert.SerializeObject(data), RequestAction.HELLO);
                 string requestJson = JsonConvert.SerializeObject(queueRequest);
-                await SendMessageToPeer(hostName, App.PortNumber, requestJson).ConfigureAwait(false);
+                await SendMessageToServer(requestJson).ConfigureAwait(false);
 
-                App.networkStateHandler.NetworkStatus = NetworkState.HostingIdle;
+                App.networkStateHandler.NetworkStatus = NetworkState.NoConnection;
             }
             catch (Exception ex)
             {
@@ -171,7 +173,7 @@ namespace queueable_scoreboard_assistant
             {
                 case RequestAction.HELLO:
                     // Ensure that the response was a "pong"
-                    if (queueRequest.JsonData == "pong")
+                    if (queueRequest.JsonData == "\"pong\"")
                     {
                         await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                             App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer);
@@ -187,21 +189,25 @@ namespace queueable_scoreboard_assistant
             }
         }
 
-        public static async Task SendMessageToPeer(HostName hostName, string port, string message)
+        public static async Task SendMessageToServer(string message)
         {
             object outValue;
             if (CoreApplication.Properties.TryGetValue("clientSocket", out outValue) && outValue is DatagramSocket)
             {
                 DatagramSocket datagramSocket = outValue as DatagramSocket;
-                using (DataWriter outputWriter = new DataWriter(datagramSocket.OutputStream))
+
+                if (!CoreApplication.Properties.TryGetValue("clientOutputWriter", out outValue) || !(outValue is DataWriter))
                 {
-                    outputWriter.WriteString(message);
-                    await outputWriter.StoreAsync();
+                    outValue = new DataWriter(datagramSocket.OutputStream);
                 }
+                DataWriter outputWriter = outValue as DataWriter;
+
+                outputWriter.WriteString(message);
+                await outputWriter.StoreAsync();
             }
         }
 
-        private QueueRequest ReceiveQueueRequest(DatagramSocketMessageReceivedEventArgs args)
+        private static QueueRequest ReceiveQueueRequest(DatagramSocketMessageReceivedEventArgs args)
         {
             string request;
             using (DataReader dataReader = args.GetDataReader())
@@ -212,6 +218,7 @@ namespace queueable_scoreboard_assistant
             // Attempt to read the incoming message
             try
             {
+                Debug.WriteLine("Deserializing with this json: " + request);
                 var queueRequest = JsonConvert.DeserializeObject<QueueRequest>(request);
                 return queueRequest;
             }

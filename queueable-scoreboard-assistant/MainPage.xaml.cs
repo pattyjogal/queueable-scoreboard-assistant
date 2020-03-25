@@ -73,14 +73,14 @@ namespace queueable_scoreboard_assistant
             {
                 foreach ((var host, var port) in App.attachedClientAddresses)
                 {
-                    await NetworkingPage.SendMessageToPeer(host, port, requestJson);
+                    await NetworkingPage.SendMessageToServer(requestJson);
                 }
             }
             // Otherwise, we're a normal peer, and are sending this to the root
             else
             {
                 Debug.WriteLine("I have been invoked");
-                await NetworkingPage.SendMessageToPeer(App.rootHostName, App.PortNumber, requestJson);
+                await NetworkingPage.SendMessageToServer(requestJson);
             }
         }
 
