@@ -52,6 +52,7 @@ namespace queueable_scoreboard_assistant
             // Listen for common state changes
             App.networkStateHandler.PropertyChanged += NetworkStateHandler_PropertyChanged;
             App.scoreboardStateHandler.PropertyChanged += ScoreboardStateHandler_PropertyChanged;
+            App.scoreboardStateHandler.PropertyChanged += PropagateScore;
         }
 
         private void ScoreboardStateHandler_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -68,20 +69,16 @@ namespace queueable_scoreboard_assistant
             QueueRequest queueRequest = new QueueRequest(scheduledMatchesJson, RequestAction.QUEUE_PROPAGATE);
             string requestJson = JsonConvert.SerializeObject(queueRequest);
             
-            // If there are attached client addresses, we're the root
-            if (App.attachedClientAddresses != null)    
-            {
-                foreach ((var host, var port) in App.attachedClientAddresses)
-                {
-                    await NetworkingPage.SendMessageToServer(requestJson);
-                }
-            }
-            // Otherwise, we're a normal peer, and are sending this to the root
-            else
-            {
-                Debug.WriteLine("I have been invoked");
-                await NetworkingPage.SendMessageToServer(requestJson);
-            }
+            await NetworkingPage.SendMessageToServer(requestJson);
+        }
+
+        public static async void PropagateScore(object sender, PropertyChangedEventArgs e)
+        {
+            string scoreStateJson = JsonConvert.SerializeObject(App.scoreboardStateHandler.ScoreboardState);
+            QueueRequest queueRequest = new QueueRequest(scoreStateJson, RequestAction.SCORE_PROPAGATE);
+            string requestJson = JsonConvert.SerializeObject(queueRequest);
+
+            await NetworkingPage.SendMessageToServer(requestJson);
         }
 
         private async void NetworkStateHandler_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -164,7 +161,6 @@ namespace queueable_scoreboard_assistant
             App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
         }
 
-
         private async void NavigationView_Loaded(object sender, RoutedEventArgs e)
         {
             NavigationView navView = (NavigationView)sender;
@@ -172,7 +168,6 @@ namespace queueable_scoreboard_assistant
             navView.IsPaneOpen = false;
             navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
         }
-
 
         private void NavigationView_Navigate(NavigationViewItem item)
         {
@@ -201,6 +196,7 @@ namespace queueable_scoreboard_assistant
 
                 updatedScoreboardState.LeftPlayerName = App.activeMatch.FirstPlayer;
                 updatedScoreboardState.RightPlayerName = App.activeMatch.SecondPlayer;
+
 
                 // Now that something has been dequeued, we alow requeuing
                 IsScoreboardPopulated = true;
@@ -360,6 +356,10 @@ namespace queueable_scoreboard_assistant
 
         private async void ActiveMatchPlayerOneAutocomplete_QuerySubmittedAsync(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            updatedScoreboardState.LeftPlayerName = sender.Text;
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
+
             playerNamesAutocomplete.QuerySubmitted(sender, args);
             try
             {
@@ -373,6 +373,10 @@ namespace queueable_scoreboard_assistant
 
         private async void ActiveMatchPlayerTwoAutocomplete_QuerySubmittedAsync(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            ScoreboardState updatedScoreboardState = App.scoreboardStateHandler.ScoreboardState;
+            updatedScoreboardState.RightPlayerName = sender.Text;
+            App.scoreboardStateHandler.ScoreboardState = updatedScoreboardState;
+
             playerNamesAutocomplete.QuerySubmitted(sender, args);
             try
             {
@@ -384,7 +388,7 @@ namespace queueable_scoreboard_assistant
             }
         }
 
-        private async System.Threading.Tasks.Task UpdateStreamFileAsync(string filename, string value)
+        private async Task UpdateStreamFileAsync(string filename, string value)
         {
             object outputFolder;
             if (App.localSettings.Values.TryGetValue("output_folder", out outputFolder))
@@ -403,13 +407,25 @@ namespace queueable_scoreboard_assistant
 
         private async void SwitchButton_ClickAsync(object sender, RoutedEventArgs e)
         {
-            string temp = ActiveMatchPlayerOneAutocomplete.Text;
+            var scoreboard = App.scoreboardStateHandler.ScoreboardState;
+
+            var tempName = scoreboard.LeftPlayerName;
+            scoreboard.LeftPlayerName = scoreboard.RightPlayerName;
+            scoreboard.RightPlayerName = tempName;
+
+            var tempScore = scoreboard.LeftScore;
+            scoreboard.LeftScore = scoreboard.RightScore;
+            scoreboard.RightScore = tempScore;
+
+            App.scoreboardStateHandler.ScoreboardState = scoreboard;
+
+/*            string temp = ActiveMatchPlayerOneAutocomplete.Text;
             ActiveMatchPlayerOneAutocomplete.Text = ActiveMatchPlayerTwoAutocomplete.Text;
             ActiveMatchPlayerTwoAutocomplete.Text = temp;
 
             temp = LeftScore.Text;
             LeftScore.Text = RightScore.Text;
-            RightScore.Text = temp;
+            RightScore.Text = temp;*/
 
             try
             {
@@ -433,7 +449,8 @@ namespace queueable_scoreboard_assistant
                 CloseButtonText = "Ok"
             };
 
-            ContentDialogResult result = await alert.ShowAsync();
+            // TODO: Re-enable when we can disable streamer setting
+            //ContentDialogResult result = await alert.ShowAsync();
         }
     }
 }

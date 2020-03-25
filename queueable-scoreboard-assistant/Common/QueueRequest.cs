@@ -37,6 +37,7 @@ namespace queueable_scoreboard_assistant.Common
     enum RequestAction
     {
         HELLO,
-        QUEUE_PROPAGATE
+        QUEUE_PROPAGATE,
+        SCORE_PROPAGATE,
     }
 }

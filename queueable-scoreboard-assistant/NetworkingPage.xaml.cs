@@ -23,6 +23,12 @@ namespace queueable_scoreboard_assistant
     /// </summary>
     public sealed partial class NetworkingPage : Page
     {
+        private struct NetworkInitialData
+        {
+            public ObservableCollection<ScheduledMatch> Queue { get; set; }
+            public ScoreboardState Scoreboard { get; set; }
+        }
+
         private DatagramSocket clientDatagramSocket;
 
         public NetworkingPage()
@@ -113,21 +119,34 @@ namespace queueable_scoreboard_assistant
             Debug.WriteLine(App.scheduledMatches);
         }
 
+        private static void HandleScoreboardUpdate(QueueRequest queueRequest)
+        {
+            App.scoreboardStateHandler.PropertyChanged -= MainPage.PropagateScore;
+
+            App.scoreboardStateHandler.ScoreboardState 
+                = JsonConvert.DeserializeObject<ScoreboardState>(queueRequest.JsonData);
+
+            App.scoreboardStateHandler.PropertyChanged += MainPage.PropagateScore;
+        }
+
         private static void HandleServerAck(QueueRequest queueRequest)
         {
             App.scheduledMatches.CollectionChanged -= MainPage.PropagateQueue;
+            App.scoreboardStateHandler.PropertyChanged -= MainPage.PropagateScore;
 
             App.scheduledMatches.Clear();
             
             try
             {
-                var newScheduledMatches
-                    = JsonConvert.DeserializeObject<ObservableCollection<ScheduledMatch>>(queueRequest.JsonData);
+                var data
+                    = JsonConvert.DeserializeObject<NetworkInitialData>(queueRequest.JsonData);
 
-                foreach (var item in newScheduledMatches)
+                foreach (var item in data.Queue)
                 {
                     App.scheduledMatches.Add(item);
                 }
+
+                App.scoreboardStateHandler.ScoreboardState = data.Scoreboard;
 
                 App.networkStateHandler.NetworkStatus = NetworkState.ClientConnectedToServer;
             }
@@ -135,8 +154,8 @@ namespace queueable_scoreboard_assistant
             {
                 // TODO: Handle this
             }
-  
 
+            App.scoreboardStateHandler.PropertyChanged += MainPage.PropagateScore;
             App.scheduledMatches.CollectionChanged += MainPage.PropagateQueue;
         }
 
@@ -207,24 +226,38 @@ namespace queueable_scoreboard_assistant
                         HandleQueueUpdate(queueRequest));
 
                     break;
+
+                case RequestAction.SCORE_PROPAGATE:
+                    await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                        HandleScoreboardUpdate(queueRequest));
+
+                    break;
             }
         }
 
         public static async Task SendMessageToServer(string message)
         {
-            object outValue;
-            if (CoreApplication.Properties.TryGetValue("clientSocket", out outValue) && outValue is DatagramSocket)
+            try
             {
-                DatagramSocket datagramSocket = outValue as DatagramSocket;
-
-                if (!CoreApplication.Properties.TryGetValue("clientOutputWriter", out outValue) || !(outValue is DataWriter))
+                object outValue;
+                if (CoreApplication.Properties.TryGetValue("clientSocket", out outValue) && outValue is DatagramSocket)
                 {
-                    outValue = new DataWriter(datagramSocket.OutputStream);
-                }
-                DataWriter outputWriter = outValue as DataWriter;
+                    DatagramSocket datagramSocket = outValue as DatagramSocket;
 
-                outputWriter.WriteString(message);
-                await outputWriter.StoreAsync();
+                    if (!CoreApplication.Properties.TryGetValue("clientOutputWriter", out outValue) || !(outValue is DataWriter))
+                    {
+                        outValue = new DataWriter(datagramSocket.OutputStream);
+                    }
+                    DataWriter outputWriter = outValue as DataWriter;
+
+                    outputWriter.WriteString(message);
+                    await outputWriter.StoreAsync();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // TODO: Handle this properly
+                Debug.WriteLine("Tried to write to a closed instance");
             }
         }
 

@@ -11,10 +11,17 @@ sock = socket.socket(socket.AF_INET,
 
 clients = set()
 queue_state = []
+score_state = {
+    'LeftScore': 0,
+    'RightScore': 0,
+    'LeftPlayerName': '',
+    'RightPlayerName': '',
+    }
 
 class RequestAction(IntEnum):
     HELLO = 0
     QUEUE_PROPAGATE = 1
+    SCORE_PROPAGATE = 2
 
 @dataclass
 class QueueRequest:
@@ -46,6 +53,7 @@ class QueueServerProtocol:
 
     def datagram_received(self, data, addr):
         global queue_state
+        global score_state
         global clients
 
         message = data.decode()
@@ -56,7 +64,10 @@ class QueueServerProtocol:
                 clients.add(addr)
 
                 print(f'sending acknowledgment to {addr}')
-                response = QueueRequest(RequestAction.HELLO, queue_state)
+                response = QueueRequest(RequestAction.HELLO, {
+                    'Queue': queue_state,
+                    'Scoreboard': score_state,
+                    })
                 self.transport.sendto(
                     response.to_json().encode('utf-8'),
                     addr
@@ -73,6 +84,17 @@ class QueueServerProtocol:
                     response.to_json().encode('utf-8'),
                     client
                     )
+        elif request.action == RequestAction.SCORE_PROPAGATE:
+            score_state = request.data
+
+            for client in clients - {addr}:
+                print(f'propagating score to {addr}')
+                response = QueueRequest(RequestAction.SCORE_PROPAGATE, score_state)
+                self.transport.sendto(
+                    response.to_json().encode('utf-8'),
+                    client
+                    )
+
 
 async def main():
     if len(sys.argv) != 3:
