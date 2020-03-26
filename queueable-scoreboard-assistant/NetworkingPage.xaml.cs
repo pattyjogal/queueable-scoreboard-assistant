@@ -247,6 +247,7 @@ namespace queueable_scoreboard_assistant
                     if (!CoreApplication.Properties.TryGetValue("clientOutputWriter", out outValue) || !(outValue is DataWriter))
                     {
                         outValue = new DataWriter(datagramSocket.OutputStream);
+                        CoreApplication.Properties.Add("clientOutputWriter", outValue);
                     }
                     DataWriter outputWriter = outValue as DataWriter;
 
