@@ -258,16 +258,16 @@ namespace queueable_scoreboard_assistant
             {
                 // TODO: Handle this properly
                 Debug.WriteLine("Tried to write to a closed instance");
+                throw;
             }
         }
 
         private static QueueRequest ReceiveQueueRequest(DatagramSocketMessageReceivedEventArgs args)
         {
             string request;
-            using (DataReader dataReader = args.GetDataReader())
-            {
-                request = dataReader.ReadString(dataReader.UnconsumedBufferLength).Trim();
-            }
+
+            request = args.GetDataReader().ReadString(args.GetDataReader().UnconsumedBufferLength).Trim();
+            
             Debug.WriteLine(request);
             // Attempt to read the incoming message
             try
